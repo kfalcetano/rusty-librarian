@@ -3,31 +3,25 @@
   <head>
     <title>Librarian Scanner</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <link rel="stylesheet" href="static/css/main.css" />
+    <link rel="stylesheet" href="../static/css/main.css" />
+    <link rel="stylesheet" href="../static/css/scanner.css" />
     <script src="https://cdn.jsdelivr.net/npm/@undecaf/zbar-wasm@0.9.11/dist/index.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@undecaf/barcode-detector-polyfill@0.9.13/dist/index.js"></script>
-    <script>
-        try {
-            window['BarcodeDetector'].getSupportedFormats()
-        } catch {
-            window['BarcodeDetector'] = barcodeDetectorPolyfill.BarcodeDetectorPolyfill
-        }
-    </script>
-    <script src="static/js/camfeed.js"></script>
+    <script src="../static/js/scanner.js"></script>
   </head>
   <body>
     <div class="topBanner">
-      <img id="logo" src="static/images/homelibrarian.svg">
-      <h2>Home Librarian</h2>
-      <div id="userSection">
-        Username ( )
-      </div>
+      <div id="logoContainer" onclick="">
+        <img id="logo" src="../static/images/homelibrarian.svg">
+        <h2>Home Librarian</h2>
+      </div> 
+      <div id="userSection" onclick="selectNewUser()"></div>
     </div>
     <div class="bottomContent">
       <canvas class="video" id="videocanvas"></canvas>
       <video class="video" autoplay muted hidden playsinline id="video" style="width: auto; height: auto;"> </video>
       <div class="bookCard">
-        <img id="thumb" src="static/images/no_book.svg">
+        <img id="thumb" src="../static/images/no_book.svg">
         <p id="bcstatus" hidden>--barcode output here--</p>
         <div id="output">
           <h2>Book Info Will Go Here</h2>

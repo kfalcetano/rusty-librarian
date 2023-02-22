@@ -9,97 +9,17 @@
 
 :root {
     --main-bg-color: #101010;
-    --outer-padding: 18px;
+    --outer-padding: 4vmin;
     --inner-padding: 15px;
     --standard-radius: 15px;
     --thumbnail-height: 183px;
     --logo-height: 30px;
 }
 
-.logo {
-    margin-bottom: .5vmin;
-}
-
-.video {
-    aspect-ratio: 1 / 1 !important;
-    width: 100%;
-    border-radius: var(--standard-radius);
-    background-color: aliceblue;
-}
-
-.bookCard {
-    display: flex;
-    justify-content: flex-start;
-    align-items: flex-start;
-    gap: var(--inner-padding);
-    background-color: #252525;
-    padding: var(--inner-padding);
-    border-radius: var(--standard-radius);
-}
-@media screen and (orientation:landscape) {
-    .bottomContent {
-        flex-direction: row !important;
-        justify-items: flex-start;
-    }
-    .video {
-        background-color: coral;
-        width: unset;
-        height: 100%;
-        min-width: 30%;
-    }
-}
-
-#thumb {
-    height: var(--thumbnail-height);
-    width: auto;
-    border-radius: 18px;
-}
-
-#addButton {
-    all: unset;
-    align-self: flex-end;
-    justify-self: flex-end;
-    border-radius: var(--standard-radius);
-    display: none;
-    background-color: #313131;
-    font-size: calc(15px + 1vmin);
-    padding: .5rem 1rem .5rem 1rem;
-}
-#addButton:active {
-    background-color: #5f5f5f;
-}
-
-#output {
-    flex: 1;
-}
-
-#logo {
-    height: var(--logo-height);
-}
-
-#userSection {
-    position: absolute;
-    right: var(--outer-padding);
-}
-
-.topBanner {
-    display: flex;
-    align-items: center;
-    padding: 10px 10px 0 var(--outer-padding);
-    gap: 1rem;
-}
-
-.bottomContent {
-    display: flex;
-    align-items: center;
-    flex-direction: column;
-    padding: var(--outer-padding);
-    gap: calc(10px + 2vmin);;
-}
-
 body {
     background-color: var(--main-bg-color);
     inset: 0;
+    position: absolute;
     margin: 0px;
     font-family: 'Open Sans', Helvetica, Arial, sans-serif;
     color: #b0b0b0;
@@ -110,4 +30,22 @@ h2 {
     font-weight: normal;
     font-size: calc(15px + 1vmin);
     margin: 5px 0px 5px 0px;
+}
+
+#logo {
+    height: var(--logo-height);
+}
+
+.topBanner {
+    display: flex;
+    align-items: center;
+    padding: 10px 10px 0 var(--outer-padding);
+    gap: 1rem;
+}
+
+button {
+    -webkit-tap-highlight-color: transparent !important;
+}
+div {
+    -webkit-tap-highlight-color: transparent !important;
 }

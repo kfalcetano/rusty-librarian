@@ -1,6 +1,6 @@
 mod bookschema;
 use actix_files as fs;
-use actix_web::{error, post, web, App, Error, HttpResponse, Result, HttpServer };
+use actix_web::{error, post, get, web, App, Error, HttpResponse, Result, HttpServer };
 use openssl::ssl::{SslAcceptor, SslFiletype, SslMethod};
 use futures::StreamExt;
 use serde::{Deserialize, Serialize};
@@ -10,13 +10,23 @@ const MAX_SIZE: usize = 262_144;
 
 #[derive(Serialize, Deserialize)]
 struct User {
-    username: String,
-    email: String,
+    name: String,
     color: String
 }
 
 async fn index() -> Result<fs::NamedFile> {
-    Ok(fs::NamedFile::open("index.html")?)
+    Ok(fs::NamedFile::open("pages/index.html")?)
+}
+
+async fn scanner() -> Result<fs::NamedFile> {
+    Ok(fs::NamedFile::open("pages/scanner.html")?)
+}
+
+#[get("/getUsers")]
+async fn get_users() ->Result<HttpResponse> {
+    let user1 = User{name: String::from("Beenie 1"), color: String::from("#123a1e") };
+    let user2 = User{name: String::from("Beenie 2"), color: String::from("#12253a") };
+    Ok(HttpResponse::Ok().json(vec![user1,user2]))
 }
 
 #[post("/fetchBook")]
@@ -47,7 +57,7 @@ async fn add_user(payload: web::Payload) -> Result<HttpResponse, Error> {
     let body = load_body(payload).await.unwrap();
     // body is loaded, now we can deserialize serde-json
     let user = serde_json::from_slice::<User>(&body)?;
-    println!("User {} added with email {} and color {}", user.username, user.email, user.color);
+    println!("User {} added with color {}", user.name, user.color);
     Ok(HttpResponse::Ok().json(user))
 }
 
@@ -80,6 +90,8 @@ async fn main() -> std::io::Result<()> {
     HttpServer::new(|| App::new()
                         .service(fs::Files::new("/static", "./static/").show_files_listing())
                         .route("/", web::get().to(index))
+                        .route("/scanner", web::get().to(scanner))
+                        .service(get_users)
                         .service(log_book)
                         .service(add_book))
         .bind_openssl("0.0.0.0:8100", builder)?

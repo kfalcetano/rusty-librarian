@@ -1,0 +1,80 @@
+.video {
+    aspect-ratio: 1 / 1 !important;
+    width: 100%;
+    border-radius: var(--standard-radius);
+    background-color: #252525;
+}
+
+.bookCard {
+    display: flex;
+    justify-content: flex-start;
+    align-items: flex-start;
+    gap: var(--inner-padding);
+    background-color: #252525;
+    padding: var(--inner-padding);
+    border-radius: var(--standard-radius);
+    width: 100%;
+    max-width: 500px;
+    box-sizing: border-box;
+}
+@media screen and (orientation:landscape) {
+    .bottomContent {
+        flex-direction: row !important;
+        justify-items: flex-start;
+    }
+    .video {
+        width: unset;
+        height: 100%;
+        min-width: 40%;
+    }
+}
+
+#thumb {
+    height: var(--thumbnail-height);
+    width: auto;
+    border-radius: 18px;
+}
+
+#addButton {
+    all: unset;
+    align-self: flex-end;
+    justify-self: flex-end;
+    border-radius: var(--standard-radius);
+    display: none;
+    background-color: #313131;
+    font-size: calc(15px + 1vmin);
+    padding: .5rem 1rem .5rem 1rem;
+}
+#addButton:active {
+    background-color: #5f5f5f;
+}
+
+#output {
+    flex: 1;
+}
+
+#logoContainer {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    cursor: pointer;
+    user-select: none;
+}
+
+#userSection {
+    position: absolute;
+    right: var(--outer-padding);
+    padding: 1vmin 2vmin 1vmin 2vmin;
+    margin-top: 10px;
+    background-color: #444444;
+    border-radius: 99em;
+    cursor: pointer;
+}
+
+.bottomContent {
+    display: flex;
+    align-items: center;
+    flex-direction: column;
+    padding: var(--outer-padding);
+    gap: calc(10px + 2vmin);;
+}

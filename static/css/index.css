@@ -1,0 +1,79 @@
+#container {
+    display: flex;
+    height: 80%;
+    justify-content: center;
+    align-items: center;
+    padding: var(--outer-padding);
+    flex-direction: column;
+}
+
+.userTile {
+    all: unset;
+    display: block;
+    text-align: center;
+    height: 20vmin;
+    width: 20vmin;
+    background-color: rgb(58, 56, 32);
+    border-radius: var(--standard-radius);
+    font-size: 4vmin;
+    transition: transform .15s;
+    transition-timing-function: ease-in-out;
+    word-wrap: break-word;
+    overflow: hidden;
+    text-overflow: clip;
+    cursor: pointer;
+}
+@media(hover: hover) and (pointer: fine) {
+    .userTile:hover {
+        transform: translate(0px, -1vmin);
+    }
+}
+.userTile:active {
+    transform: translate(0px, -1vmin);
+}
+
+#userBunch {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 5vmin;
+    margin-bottom: var(--outer-padding);
+}
+
+#addUser {
+    all: unset;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 15vmin;
+    width: 15vmin;
+    border-radius: var(--standard-radius);
+    background-color: #383838;
+    font-weight: 900;
+    cursor: pointer;
+    
+}
+#addUser > img {
+    object-fit: fill;
+    height: 5vmin;
+    width: 5vmin;
+    transition: height .2s, width .2s;
+    transition-timing-function: ease-in-out;
+}
+@media(hover: hover) and (pointer: fine) {
+    #addUser:hover > img {
+        height: 6vmin;
+        width: 6vmin;
+    }
+}
+
+@keyframes hoverBounce {
+    0% {transform: translate(0px, 0px);}
+    50% {}
+    100% {transform: translate(0px, 0px);}
+}
+
+#addUser:active {
+    background-color: #5e5e5e;
+}
