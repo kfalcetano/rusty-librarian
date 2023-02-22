@@ -1,0 +1,76 @@
+{
+  "kind": "books#volumes",
+  "totalItems": 14,
+  "items": [
+    {
+      "kind": "books#volume",
+      "id": "2rcPAAAAYAAJ",
+      "etag": "vMMhFLd4GoE",
+      "selfLink": "https://www.googleapis.com/books/v1/volumes/2rcPAAAAYAAJ",
+      "volumeInfo": {
+        "title": "Kitchen",
+        "authors": [
+          "Banana Yoshimoto"
+        ],
+        "publishedDate": "1993",
+        "description": "Two stories, \"Kitchen\" and \"Moonlight Shadow,\" told through the eyes of a pair of contemporary young Japanese women, deal with the themes of mothers, love, transsexuality, kitchens, and tragedy. Reprint. NYT.",
+        "industryIdentifiers": [
+          {
+            "type": "OTHER",
+            "identifier": "UVA:X030008381"
+          }
+        ],
+        "readingModes": {
+          "text": false,
+          "image": false
+        },
+        "pageCount": 152,
+        "printType": "BOOK",
+        "categories": [
+          "Domestic fiction"
+        ],
+        "averageRating": 3.5,
+        "ratingsCount": 49,
+        "maturityRating": "NOT_MATURE",
+        "allowAnonLogging": false,
+        "contentVersion": "0.1.2.0.preview.0",
+        "panelizationSummary": {
+          "containsEpubBubbles": false,
+          "containsImageBubbles": false
+        },
+        "imageLinks": {
+          "smallThumbnail": "http://books.google.com/books/content?id=2rcPAAAAYAAJ&printsec=frontcover&img=1&zoom=5&source=gbs_api",
+          "thumbnail": "http://books.google.com/books/content?id=2rcPAAAAYAAJ&printsec=frontcover&img=1&zoom=1&source=gbs_api"
+        },
+        "language": "en",
+        "previewLink": "http://books.google.com/books?id=2rcPAAAAYAAJ&q=isbn%3D9780671880187&dq=isbn%3D9780671880187&hl=&cd=1&source=gbs_api",
+        "infoLink": "http://books.google.com/books?id=2rcPAAAAYAAJ&dq=isbn%3D9780671880187&hl=&source=gbs_api",
+        "canonicalVolumeLink": "https://books.google.com/books/about/Kitchen.html?hl=&id=2rcPAAAAYAAJ"
+      },
+      "saleInfo": {
+        "country": "US",
+        "saleability": "NOT_FOR_SALE",
+        "isEbook": false
+      },
+      "accessInfo": {
+        "country": "US",
+        "viewability": "NO_PAGES",
+        "embeddable": false,
+        "publicDomain": false,
+        "textToSpeechPermission": "ALLOWED",
+        "epub": {
+          "isAvailable": false
+        },
+        "pdf": {
+          "isAvailable": false
+        },
+        "webReaderLink": "http://play.google.com/books/reader?id=2rcPAAAAYAAJ&hl=&source=gbs_api",
+        "accessViewStatus": "NONE",
+        "quoteSharingAllowed": false
+      },
+      "searchInfo": {
+        "textSnippet": "Two stories, &quot;Kitchen&quot; and &quot;Moonlight Shadow,&quot; told through the eyes of a pair of contemporary young Japanese women, deal with the themes of mothers, love, transsexuality, kitchens, and tragedy. Reprint. NYT."
+      }
+    }
+  ]
+}
