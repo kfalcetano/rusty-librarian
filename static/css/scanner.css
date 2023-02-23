@@ -36,7 +36,6 @@
 }
 
 #addButton {
-    all: unset;
     align-self: flex-end;
     justify-self: flex-end;
     border-radius: var(--standard-radius);
@@ -51,24 +50,6 @@
 
 #output {
     flex: 1;
-}
-
-#logoContainer {
-    display: flex;
-    align-items: center;
-    gap: 1rem;
-    cursor: pointer;
-    user-select: none;
-}
-
-#userSection {
-    position: absolute;
-    right: var(--outer-padding);
-    padding: 1vmin 2vmin 1vmin 2vmin;
-    margin-top: 10px;
-    background-color: #444444;
-    border-radius: 99em;
-    cursor: pointer;
 }
 
 .bottomContent {

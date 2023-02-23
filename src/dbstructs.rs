@@ -11,6 +11,11 @@ macro_rules! pub_struct {
     }
 }
 
+pub_struct!(User {
+    name: String,
+    color: String,
+});
+
 pub_struct!(BookId { 
     isbn: String,
 });
@@ -47,6 +52,19 @@ pub_struct!(Book {
     pageCount: u32,
     printType: String,
     categories: Vec<String>,
+    ratings: Vec<Rating>,
+    comments: Vec<Comment>,
+    readBy: Vec<User>,
+});
+
+pub_struct!(Rating {
+    user: User,
+    stars: u8,
+});
+
+pub_struct!(Comment {
+    user: User,
+    content: String,
 });
 
 pub_struct!(ImageLinks {
@@ -66,6 +84,9 @@ impl VolumeInfo {
             pageCount: self.pageCount.to_owned(),
             printType: self.printType.to_owned(),
             categories: self.categories.to_owned(),
+            ratings: vec![],
+            comments: vec![],
+            readBy: vec![]
         }
     }
 }

@@ -8,14 +8,40 @@
     <script src="../static/js/index.js"></script>
   </head>
   <body>
-    <div class="topBanner">
-        <img id="logo" src="../static/images/homelibrarian.svg">
-        <h2>Home Librarian</h2>
+    <div id="logoContainer">
+      <div id="topBanner">
+          <img id="logo" src="../static/images/homelibrarian.svg">
+          <h2>Home Librarian</h2>
+      </div>
     </div>
     <div id="container">
         <div id="userBunch">
         </div>
-        <button id="addUser"><img id="plus" src="../static/images/plus.svg"></div>
+        <button id="addUser" onclick="openModal('addUserForm')"><img id="plus" src="../static/images/plus.svg"></div>
     </div>
+
+    <div id="addUserForm" class="modal">
+      <div class="modal-body">
+          <h2>Add User</h2>
+          <label for="uname" autcomplete="off" min="1">Name</label>
+          <input id="uname" placeholder="beenie">
+          Color Selection
+          <div id="colorSelection">
+            <div class="swatch" style="background-color: #380000;"></div>
+            <div class="swatch" style="background-color: #382900;"></div>
+            <div class="swatch" style="background-color: #1e3800;"></div>
+            <div class="swatch" style="background-color: #003809;"></div>
+            <div class="swatch" style="background-color: #003833;"></div>
+            <div class="swatch" style="background-color: #001438;"></div>
+            <div class="swatch" style="background-color: #0a0038;"></div>
+            <div class="swatch" style="background-color: #380033;"></div>
+          </div>
+          <div class="modal-button-row">
+            <button class="modal-button" onclick="closeModal()">Close</button>
+            <button class="modal-button" onclick="addUser()" type="submit">Add User</button>
+          </div>
+      </div>
+    </div>
+
   </body>
 </html>

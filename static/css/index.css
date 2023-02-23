@@ -7,8 +7,56 @@
     flex-direction: column;
 }
 
+.modal {
+    display: none;
+    position: fixed;
+    inset: 0;
+    z-index: 10000;
+    background-color: rgba(0, 0, 0, .75);
+    padding: 2vmin;
+    overflow: auto;
+}
+.modal.open {
+    display: block;
+}
+.modal-body {
+    display: flex;
+    flex-direction: column;
+    gap: 2vmin;
+    padding: 1vmin 4vmin 4vmin 4vmin;
+    background-color: #202020;
+    border-radius: var(--standard-radius);
+    max-width: 800px;
+}
+body.modal-open {
+    overflow: hidden;
+}
+.modal-button {
+    padding: 2vmin;
+}
+.modal-button-row {
+    display: flex;
+    justify-content: space-between;
+}
+
+#colorSelection {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 2vmin;
+}
+
+.swatch {
+    width: calc(20px + 4vmin);
+    height: calc(20px + 4vmin);
+    border-radius: 99em;
+    box-sizing: border-box;
+}
+.selected-swatch {
+    border: calc(.2vmin + 2px) solid white;
+}
+
 .userTile {
-    all: unset;
     display: block;
     text-align: center;
     height: 20vmin;
@@ -42,7 +90,6 @@
 }
 
 #addUser {
-    all: unset;
     display: flex;
     justify-content: center;
     align-items: center;

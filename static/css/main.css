@@ -8,16 +8,17 @@
 }
 
 :root {
-    --main-bg-color: #101010;
+    --bg-primary: #101010;
+    --bg-secondary: #303030;
     --outer-padding: 4vmin;
     --inner-padding: 15px;
-    --standard-radius: 15px;
+    --standard-radius: calc(10px + 2vmin);
     --thumbnail-height: 183px;
     --logo-height: 30px;
 }
 
 body {
-    background-color: var(--main-bg-color);
+    background-color: var(--bg-primary);
     inset: 0;
     position: absolute;
     margin: 0px;
@@ -36,16 +37,57 @@ h2 {
     height: var(--logo-height);
 }
 
-.topBanner {
+#topBanner {
     display: flex;
     align-items: center;
+    justify-content: space-between;
     padding: 10px 10px 0 var(--outer-padding);
     gap: 1rem;
 }
+#logoContainer {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    cursor: pointer;
+    user-select: none;
+    white-space: nowrap;
+}
+#userSection {
+    right: var(--outer-padding);
+    padding: .5rem 1rem .5rem 1rem;
+    background-color: #444444;
+    border-radius: 99em;
+    cursor: pointer;
+    flex-shrink: 1;
+    flex-grow: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+#bottomPane {
+    position: absolute;
+    display: flex;
+    justify-content: space-evenly;
+    align-items: center;
+    bottom: 0px;
+    padding: 4vmin;
+    box-sizing: border-box;
+    width: 100%
+}
 
 button {
-    -webkit-tap-highlight-color: transparent !important;
+    all: unset;
+    -webkit-tap-highlight-color: transparent;
+    cursor: pointer;
 }
 div {
     -webkit-tap-highlight-color: transparent !important;
+}
+
+input {
+    all: unset;
+    background-color: var(--bg-secondary);
+    padding: 2vmin;
+    border-radius: 99em;
 }

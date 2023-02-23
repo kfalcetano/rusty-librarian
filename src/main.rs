@@ -1,29 +1,26 @@
-mod bookschema;
+mod dbstructs;
+mod http_errors;
 use actix_files as fs;
 use actix_web::{ post, get, web::{self, Json}, App, Error, HttpResponse, Result, HttpServer, web::Data };
 use openssl::ssl::{SslAcceptor, SslFiletype, SslMethod};
-use serde::{Deserialize, Serialize};
 use mongodb::{bson::doc, Client, Database};
-const GOOG_BOOK_ROUTE: &str = "https://www.googleapis.com/books/v1/volumes?q=isbn%3D";
 
-#[derive(Clone, Serialize, Deserialize)]
-struct User {
-    name: String,
-    color: String
-}
+const GOOG_BOOK_ROUTE: &str = "https://www.googleapis.com/books/v1/volumes?q=isbn%3D";
 
 async fn index() -> Result<fs::NamedFile> {
     Ok(fs::NamedFile::open("pages/index.html")?)
 }
-
 async fn scanner() -> Result<fs::NamedFile> {
     Ok(fs::NamedFile::open("pages/scanner.html")?)
+}
+async fn dashboard() -> Result<fs::NamedFile> {
+    Ok(fs::NamedFile::open("pages/dashboard.html")?)
 }
 
 #[get("/getUsers")]
 async fn get_users(db: Data<Database>,) ->Result<HttpResponse> {
-    let mut cursor = db.collection::<User>("users").find(None, None).await.unwrap();
-    let mut out: Vec<User> = vec![];
+    let mut cursor = db.collection::<dbstructs::User>("users").find(None, None).await.unwrap();
+    let mut out: Vec<dbstructs::User> = vec![];
     while cursor.advance().await.unwrap() {
         out.push(cursor.deserialize_current().unwrap());
     }
@@ -31,32 +28,39 @@ async fn get_users(db: Data<Database>,) ->Result<HttpResponse> {
 }
 
 #[post("/addUser")]
-async fn add_user(db: Data<Database>, user_json: Json<User>) -> Result<HttpResponse, Error> {
+async fn add_user(db: Data<Database>, user_json: Json<dbstructs::User>) -> Result<HttpResponse, http_errors::DataError> {
     let user = user_json.into_inner();
-    db.collection::<User>("users").insert_one(user.clone(), None).await.unwrap();
+    let mut cursor = db.collection::<dbstructs::User>("users").find(None, None).await.unwrap();
+    while cursor.advance().await.unwrap() {
+        if user.name == cursor.deserialize_current().unwrap().name {
+            println!("User {} already added", user.name);
+            return Err(http_errors::DataError::DuplicateUser)
+        }
+    }
+    db.collection::<dbstructs::User>("users").insert_one(user.clone(), None).await.unwrap();
     Ok(HttpResponse::Ok().json(user))
 }
 
 #[post("/fetchBook")]
-async fn fetch_book(obj: Json<bookschema::BookId>) -> Result<HttpResponse, Error> {
+async fn fetch_book(obj: Json<dbstructs::BookId>) -> Result<HttpResponse, Error> {
     println!("{}", obj.isbn);
-    let book_find: bookschema::Volumes = reqwest::get(format!("{}{}&maxResults=1", GOOG_BOOK_ROUTE, &obj.isbn)).await.unwrap().json().await.unwrap();
+    let book_find: dbstructs::Volumes = reqwest::get(format!("{}{}&maxResults=1", GOOG_BOOK_ROUTE, &obj.isbn)).await.unwrap().json().await.unwrap();
     println!("{}", book_find.items[0].volumeInfo.title);
     Ok(HttpResponse::Ok().json(&book_find.items[0].volumeInfo.into_book(obj.isbn.clone())))
 }
 
 #[post("/addBook")]
-async fn add_book(db: Data<Database>, book_json: Json<bookschema::Book>) -> Result<HttpResponse, Error> {
+async fn add_book(db: Data<Database>, book_json: Json<dbstructs::Book>) -> Result<HttpResponse, http_errors::DataError> {
     let book = book_json.into_inner();
     let filter = doc! { "isbn": book.isbn.clone() };
-    let mut cursor = db.collection::<bookschema::Book>("books").find(filter, None).await.unwrap();
+    let mut cursor = db.collection::<dbstructs::Book>("books").find(filter, None).await.unwrap();
     while cursor.advance().await.unwrap() {
         if book.isbn == cursor.deserialize_current().unwrap().isbn {
             println!("{} already added", book.title);
-            return Ok(HttpResponse::Ok().json(book))
+            return Err(http_errors::DataError::DuplicateBook)
         }
     }
-    db.collection::<bookschema::Book>("books").insert_one(book.clone(), None).await.unwrap();
+    db.collection::<dbstructs::Book>("books").insert_one(book.clone(), None).await.unwrap();
     Ok(HttpResponse::Ok().json(book))
 }
 
@@ -82,6 +86,7 @@ async fn main() -> std::io::Result<()> {
                         .app_data(db_data.clone())
                         .route("/", web::get().to(index))
                         .route("/scanner", web::get().to(scanner))
+                        .route("/dashboard", web::get().to(dashboard))
                         .service(get_users)
                         .service(fetch_book)
                         .service(add_book)
