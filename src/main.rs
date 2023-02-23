@@ -1,14 +1,12 @@
 mod bookschema;
 use actix_files as fs;
-use actix_web::{error, post, get, web, App, Error, HttpResponse, Result, HttpServer };
+use actix_web::{ post, get, web::{self, Json}, App, Error, HttpResponse, Result, HttpServer, web::Data };
 use openssl::ssl::{SslAcceptor, SslFiletype, SslMethod};
-use futures::StreamExt;
 use serde::{Deserialize, Serialize};
-
+use mongodb::{bson::doc, Client, Database};
 const GOOG_BOOK_ROUTE: &str = "https://www.googleapis.com/books/v1/volumes?q=isbn%3D";
-const MAX_SIZE: usize = 262_144;
 
-#[derive(Serialize, Deserialize)]
+#[derive(Clone, Serialize, Deserialize)]
 struct User {
     name: String,
     color: String
@@ -23,55 +21,43 @@ async fn scanner() -> Result<fs::NamedFile> {
 }
 
 #[get("/getUsers")]
-async fn get_users() ->Result<HttpResponse> {
-    let user1 = User{name: String::from("Beenie 1"), color: String::from("#123a1e") };
-    let user2 = User{name: String::from("Beenie 2"), color: String::from("#12253a") };
-    Ok(HttpResponse::Ok().json(vec![user1,user2]))
-}
-
-#[post("/fetchBook")]
-async fn log_book(payload: web::Payload) -> Result<HttpResponse, Error> {
-    // payload is a stream of Bytes objects
-    let body = load_body(payload).await.unwrap();
-    // body is loaded, now we can deserialize serde-json
-    let obj = serde_json::from_slice::<bookschema::BookId>(&body)?;
-    println!("{}", obj.isbn);
-    let book_find: bookschema::Volumes = reqwest::get(format!("{}{}&maxResults=1", GOOG_BOOK_ROUTE, obj.isbn)).await.unwrap().json().await.unwrap();
-    println!("{}", book_find.items[0].volumeInfo.title);
-    Ok(HttpResponse::Ok().json(&book_find.items[0].volumeInfo))
-}
-
-#[post("/addBook")]
-async fn add_book(payload: web::Payload) -> Result<HttpResponse, Error> {
-    // payload is a stream of Bytes objects
-    let body = load_body(payload).await.unwrap();
-    // body is loaded, now we can deserialize serde-json
-    let info = serde_json::from_slice::<bookschema::VolumeInfo>(&body)?;
-    println!("User requested to add {}", info.title);
-    Ok(HttpResponse::Ok().json(info))
+async fn get_users(db: Data<Database>,) ->Result<HttpResponse> {
+    let mut cursor = db.collection::<User>("users").find(None, None).await.unwrap();
+    let mut out: Vec<User> = vec![];
+    while cursor.advance().await.unwrap() {
+        out.push(cursor.deserialize_current().unwrap());
+    }
+    Ok(HttpResponse::Ok().json(out))
 }
 
 #[post("/addUser")]
-async fn add_user(payload: web::Payload) -> Result<HttpResponse, Error> {
-    // payload is a stream of Bytes objects
-    let body = load_body(payload).await.unwrap();
-    // body is loaded, now we can deserialize serde-json
-    let user = serde_json::from_slice::<User>(&body)?;
-    println!("User {} added with color {}", user.name, user.color);
+async fn add_user(db: Data<Database>, user_json: Json<User>) -> Result<HttpResponse, Error> {
+    let user = user_json.into_inner();
+    db.collection::<User>("users").insert_one(user.clone(), None).await.unwrap();
     Ok(HttpResponse::Ok().json(user))
 }
 
-async fn load_body(mut payload: web::Payload) -> Result<web::BytesMut, Error> {
-    let mut body = web::BytesMut::new();
-    while let Some(chunk) = payload.next().await {
-        let chunk = chunk?;
-        // limit max size of in-memory payload
-        if (body.len() + chunk.len()) > MAX_SIZE {
-            return Err(error::ErrorBadRequest("overflow"));
+#[post("/fetchBook")]
+async fn fetch_book(obj: Json<bookschema::BookId>) -> Result<HttpResponse, Error> {
+    println!("{}", obj.isbn);
+    let book_find: bookschema::Volumes = reqwest::get(format!("{}{}&maxResults=1", GOOG_BOOK_ROUTE, &obj.isbn)).await.unwrap().json().await.unwrap();
+    println!("{}", book_find.items[0].volumeInfo.title);
+    Ok(HttpResponse::Ok().json(&book_find.items[0].volumeInfo.into_book(obj.isbn.clone())))
+}
+
+#[post("/addBook")]
+async fn add_book(db: Data<Database>, book_json: Json<bookschema::Book>) -> Result<HttpResponse, Error> {
+    let book = book_json.into_inner();
+    let filter = doc! { "isbn": book.isbn.clone() };
+    let mut cursor = db.collection::<bookschema::Book>("books").find(filter, None).await.unwrap();
+    while cursor.advance().await.unwrap() {
+        if book.isbn == cursor.deserialize_current().unwrap().isbn {
+            println!("{} already added", book.title);
+            return Ok(HttpResponse::Ok().json(book))
         }
-        body.extend_from_slice(&chunk);
     }
-    Ok(body)
+    db.collection::<bookschema::Book>("books").insert_one(book.clone(), None).await.unwrap();
+    Ok(HttpResponse::Ok().json(book))
 }
 
 #[actix_web::main]
@@ -87,13 +73,19 @@ async fn main() -> std::io::Result<()> {
     // wsl2 fuckery:
     // netsh interface portproxy add v4tov4 listenport=8100 listenaddress=0.0.0.0 connectport=8100 connectaddress=<wsl_ip>
 
-    HttpServer::new(|| App::new()
+    let client = Client::with_uri_str("mongodb://root:rootpassword@localhost:27017").await.unwrap();
+
+    let db_data = Data::new(client.database("testdb"));
+
+    HttpServer::new(move || App::new()
                         .service(fs::Files::new("/static", "./static/").show_files_listing())
+                        .app_data(db_data.clone())
                         .route("/", web::get().to(index))
                         .route("/scanner", web::get().to(scanner))
                         .service(get_users)
-                        .service(log_book)
-                        .service(add_book))
+                        .service(fetch_book)
+                        .service(add_book)
+                        .service(add_user))
         .bind_openssl("0.0.0.0:8100", builder)?
         .run()
         .await

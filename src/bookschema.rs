@@ -4,14 +4,14 @@ use serde::{Deserialize, Serialize};
 macro_rules! pub_struct {
     ($name:ident {$($field:ident: $t:ty,)*}) => {
         #[allow(non_snake_case)]
-        #[derive(Deserialize, Serialize)]
+        #[derive(Clone, Deserialize, Serialize)]
         pub struct $name {
             $(pub $field: $t),*
         }
     }
 }
 
-pub_struct!(BookId {
+pub_struct!(BookId { 
     isbn: String,
 });
 
@@ -37,7 +37,35 @@ pub_struct!(VolumeInfo {
     categories: Vec<String>,
 });
 
+pub_struct!(Book {
+    isbn: String,
+    title: String,
+    authors: Vec<String>,
+    imageLinks: ImageLinks,
+    publishedDate: String,
+    description: String,
+    pageCount: u32,
+    printType: String,
+    categories: Vec<String>,
+});
+
 pub_struct!(ImageLinks {
     smallThumbnail: String,
     thumbnail: String,
 });
+
+impl VolumeInfo {
+    pub fn into_book(&self, isbn: String) -> Book {
+        Book {
+            isbn: isbn,
+            title: self.title.to_owned(),
+            authors: self.authors.to_owned(),
+            imageLinks: self.imageLinks.to_owned(),
+            publishedDate: self.publishedDate.to_owned(),
+            description: self.description.to_owned(),
+            pageCount: self.pageCount.to_owned(),
+            printType: self.printType.to_owned(),
+            categories: self.categories.to_owned(),
+        }
+    }
+}
