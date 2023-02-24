@@ -27,6 +27,16 @@ async fn get_users(db: Data<Database>,) ->Result<HttpResponse> {
     Ok(HttpResponse::Ok().json(out))
 }
 
+#[get("/getBookList")]
+async fn get_book_list(db: Data<Database>,) ->Result<HttpResponse> {
+    let mut cursor = db.collection::<dbstructs::BookListElement>("books").find(None, None).await.unwrap();
+    let mut out: Vec<dbstructs::BookListElement> = vec![];
+    while cursor.advance().await.unwrap() {
+        out.push(cursor.deserialize_current().unwrap());
+    }
+    Ok(HttpResponse::Ok().json(out))
+}
+
 #[post("/addUser")]
 async fn add_user(db: Data<Database>, user_json: Json<dbstructs::User>) -> Result<HttpResponse, http_errors::DataError> {
     let user = user_json.into_inner();
@@ -42,8 +52,16 @@ async fn add_user(db: Data<Database>, user_json: Json<dbstructs::User>) -> Resul
 }
 
 #[post("/fetchBook")]
-async fn fetch_book(obj: Json<dbstructs::BookId>) -> Result<HttpResponse, Error> {
-    println!("{}", obj.isbn);
+async fn fetch_book(db: Data<Database>, obj: Json<dbstructs::BookId>) -> Result<HttpResponse, Error> {
+    let filter = doc! { "isbn": obj.isbn.clone() };
+    let mut cursor = db.collection::<dbstructs::Book>("books").find(filter, None).await.unwrap();
+    while cursor.advance().await.unwrap() {
+        let book = cursor.deserialize_current().unwrap();
+        if obj.isbn == book.isbn {
+            println!("{} already added", book.title);
+            return Ok(HttpResponse::Found().json(book))
+        }
+    }
     let book_find: dbstructs::Volumes = reqwest::get(format!("{}{}&maxResults=1", GOOG_BOOK_ROUTE, &obj.isbn)).await.unwrap().json().await.unwrap();
     println!("{}", book_find.items[0].volumeInfo.title);
     Ok(HttpResponse::Ok().json(&book_find.items[0].volumeInfo.into_book(obj.isbn.clone())))
@@ -90,7 +108,8 @@ async fn main() -> std::io::Result<()> {
                         .service(get_users)
                         .service(fetch_book)
                         .service(add_book)
-                        .service(add_user))
+                        .service(add_user)
+                        .service(get_book_list))
         .bind_openssl("0.0.0.0:8100", builder)?
         .run()
         .await

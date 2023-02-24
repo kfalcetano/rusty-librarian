@@ -9,21 +9,24 @@
 
 :root {
     --bg-primary: #101010;
+    --bg-pane: #171717;
     --bg-secondary: #303030;
     --outer-padding: 4vmin;
-    --inner-padding: 15px;
+    --inner-padding: 2vmin;
     --standard-radius: calc(10px + 2vmin);
     --thumbnail-height: 183px;
-    --logo-height: 30px;
+    --logo-height: calc(30px + 2vmin);
 }
 
 body {
+    position: absolute;
+    display: flex;
+    flex-direction: column;
     background-color: var(--bg-primary);
     inset: 0;
-    position: absolute;
     margin: 0px;
     font-family: 'Open Sans', Helvetica, Arial, sans-serif;
-    color: #b0b0b0;
+    color: #d3d3d3;
     font-size: calc(10px + 1vmin);
 }
 
@@ -33,22 +36,42 @@ h2 {
     margin: 5px 0px 5px 0px;
 }
 
+#contentContainer {
+    overflow: scroll;
+    flex-grow: 1;
+    padding: var(--outer-padding);
+    padding-bottom: 0;
+}
+
 #logo {
     height: var(--logo-height);
+}
+
+.navIcon {
+    border-radius: 99em;
+    padding: 2vmin;
+}
+.navIcon > img {
+    display: block;
+    height: var(--logo-height);
+}
+
+.navIconSelected {
+    background-color: #303030;
 }
 
 #topBanner {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 10px 10px 0 var(--outer-padding);
+    padding: 10px 10px var(--inner-padding) var(--outer-padding);
     gap: 1rem;
+    background-color: var(--bg-pane);
 }
 #logoContainer {
     display: flex;
     align-items: center;
     gap: 1rem;
-    cursor: pointer;
     user-select: none;
     white-space: nowrap;
 }
@@ -66,20 +89,20 @@ h2 {
 }
 
 #bottomPane {
-    position: absolute;
     display: flex;
     justify-content: space-evenly;
     align-items: center;
     bottom: 0px;
-    padding: 4vmin;
     box-sizing: border-box;
-    width: 100%
+    padding: var(--inner-padding);
+    background-color: var(--bg-pane);
 }
 
 button {
     all: unset;
     -webkit-tap-highlight-color: transparent;
     cursor: pointer;
+    user-select: none;
 }
 div {
     -webkit-tap-highlight-color: transparent !important;

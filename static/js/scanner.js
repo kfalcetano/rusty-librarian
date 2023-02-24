@@ -18,7 +18,7 @@ async function setupCamera() {
 }
 
 async function fetchBook(isbn) {
-    document.getElementById('addButton').style.display = "none"
+    swtichActionButtonMode('hidden')
     const response = await fetch("/fetchBook", {
         method: 'POST',
         headers: {
@@ -27,16 +27,23 @@ async function fetchBook(isbn) {
         body: JSON.stringify({isbn: String(isbn)})
     })
     let info = await response.json()
+
     document.getElementById('output').innerHTML = "<h2>" + info.title + "</h2>"
         + info.authors[0] + "<br>"
         + info.categories[0] + "<br>"
         + info.publishedDate
     document.getElementById('thumb').src = info.imageLinks.thumbnail
     window.localStorage.setItem("currentBook", JSON.stringify(info))
-    document.getElementById('addButton').style.display = "block"
+    if (response.status == 200) {
+        swtichActionButtonMode('add')
+    }
+    if (response.status == 302) {
+        swtichActionButtonMode('edit')
+    }
 }
 
 async function postCurrentBook() {
+    swtichActionButtonMode('hidden')
     infoString = window.localStorage.getItem("currentBook")
     const response = await fetch("/addBook", {
         method: 'POST',
@@ -45,6 +52,33 @@ async function postCurrentBook() {
         },
         body: infoString
     })
+    if (response.status == 200) {
+        swtichActionButtonMode('edit')
+    }
+    else {
+        window.localStorage.setItem("currentBook", "")
+    }
+}
+
+function swtichActionButtonMode(mode) {
+    let button = document.getElementById('actionButton')
+    let img = button.getElementsByTagName('img')[0]
+    switch (mode) {
+        case "edit":
+            img.src = "../static/images/edit.svg"
+            //TODO: change to open book page
+            button.onclick = postCurrentBook
+            button.style.display = "block"
+            break;
+        case "add":
+            img.src = "../static/images/plus.svg"
+            button.onclick = postCurrentBook
+            button.style.display = "block"
+            break;
+        case "hidden":
+            button.style.display = "none"
+            break;
+    }
 }
 
 async function drawWebcamContinuous(barcodeDetector){
@@ -80,7 +114,7 @@ async function main() {
         await setupCamera()
     }
     catch {
-        //alert("Couldn't find a camera :(")
+        alert("Couldn't find a camera :(")
     }
 
     setupUserData()
@@ -97,8 +131,6 @@ async function main() {
   
     // Start continuous drawing function
     drawWebcamContinuous(barcodeDetector)
-
-    console.log("Camera setup done")
 }
 
 if (window.localStorage.getItem("currentUser").length < 1 

@@ -22,20 +22,21 @@ async function addUser() {
         alert("Please select a color")
         return 
     }
-    const response = await fetch("/addUser", {
+    res = fetch("/addUser", {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json'
         },
         body: JSON.stringify({name: String(name.value), color: String(swatch.style.backgroundColor)})
     })
+    closeModal()
+    const response = await res
     if (!response.ok) {
         alert(await response.text())
         name.select()
         return
     }
     await fetchUsers()
-    closeModal()
 }
 
 async function setCurrentUser(e) {
@@ -69,10 +70,8 @@ async function main() {
 
     // color swatch on modals
     let swatches = document.getElementsByClassName("swatch")
-    console.log(swatches.length)
     for (var i = 0; i < swatches.length; i++) {
         swatches[i].addEventListener("click", e => {
-            console.log("clicked")
             deselectSwatch()
             e.target.classList.add("selected-swatch");
         })

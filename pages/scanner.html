@@ -1,23 +1,28 @@
 <!DOCTYPE html>
 <html>
-  <head>
-    <title>Librarian Scanner</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <link rel="stylesheet" href="../static/css/main.css" />
-    <link rel="stylesheet" href="../static/css/scanner.css" />
-    <script src="https://cdn.jsdelivr.net/npm/@undecaf/zbar-wasm@0.9.11/dist/index.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@undecaf/barcode-detector-polyfill@0.9.13/dist/index.js"></script>
-    <script src="../static/js/scanner.js"></script>
-    <script src="../static/js/common.js"></script>
-  </head>
-  <body>
-    <div id="topBanner">
-      <div id="logoContainer" onclick="">
-        <img id="logo" src="../static/images/homelibrarian.svg">
-        <h2>Home Librarian</h2>
-      </div> 
-      <div id="userSection" onclick="selectNewUser()"></div>
+
+<head>
+  <title>Librarian Scanner</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="stylesheet" href="../static/css/main.css" />
+  <link rel="stylesheet" href="../static/css/scanner.css" />
+  <script src="https://cdn.jsdelivr.net/npm/@undecaf/zbar-wasm@0.9.11/dist/index.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@undecaf/barcode-detector-polyfill@0.9.13/dist/index.js"></script>
+  <script src="../static/js/scanner.js"></script>
+  <script src="../static/js/common.js"></script>
+</head>
+
+<body>
+  <div id="topBanner">
+    <div id="logoContainer" onclick="">
+      <img id="logo" src="../static/images/homelibrarian.svg">
+      <h2>Home Librarian</h2>
     </div>
+    <button id="userSection" onclick="selectNewUser()">
+  </div>
+  </div>
+
+  <div id="contentContainer">
     <div class="bottomContent">
       <canvas class="video" id="videocanvas"></canvas>
       <video class="video" autoplay muted hidden playsinline id="video" style="width: auto; height: auto;"> </video>
@@ -28,13 +33,16 @@
           <h2>Book Info Will Go Here</h2>
           Scan to pull in a book.
         </div>
-        <button id="addButton" onclick="postCurrentBook()">+</button>
+        <button id="actionButton" onclick="postCurrentBook()"><img src="../static/images/plus.svg"></button>
       </div>
     </div>
-    <div id="bottomPane">
-      <a href="/dashboard">Dashboard</a>
-      <a href="/scanner">Search</a>
-      <a href="/scanner">Scanner</a>
   </div>
-  </body>
+
+  <div id="bottomPane">
+    <a href="/dashboard" class="navIcon"><img src="../static/images/dash-icon.svg"></a>
+    <a href="/scanner" class="navIcon"><img src="../static/images/search-icon.svg"></a>
+    <a href="/scanner" class="navIcon navIconSelected"><img src="../static/images/scanner-icon.svg"></a>
+  </div>
+</body>
+
 </html>

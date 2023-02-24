@@ -57,6 +57,12 @@ pub_struct!(Book {
     readBy: Vec<User>,
 });
 
+pub_struct!(BookListElement {
+    isbn: String,
+    title: String,
+    authors: Vec<String>,
+});
+
 pub_struct!(Rating {
     user: User,
     stars: u8,

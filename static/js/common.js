@@ -4,8 +4,25 @@ async function selectNewUser() {
     window.location.href='/'
 }
 
-async function setupUserData (){
+async function applyUserData() {
     let us = document.getElementById("userSection")
     us.innerHTML = window.localStorage.getItem("currentUser")
     us.style.backgroundColor = window.localStorage.getItem("currentUserColor")
+}
+
+async function openBookPage(isbn) {
+    console.log(isbn)
+}
+
+async function setupUserData (){
+    const response = await fetch("/getUsers")
+    let users = await response.json()
+    for (const user of users) {
+        if (user.name == window.localStorage.getItem("currentUser")) {
+            applyUserData()
+            return
+        }
+    }
+    alert("The user you selected has been deleted :(")
+    selectNewUser()
 }

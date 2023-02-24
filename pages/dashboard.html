@@ -2,27 +2,32 @@
 <html>
 
 <head>
-    <title>Home Librarian</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <link rel="stylesheet" href="../static/css/main.css" />
-    <link rel="stylesheet" href="../static/css/dashboard.css" />
-    <script src="../static/js/dashboard.js"></script>
-    <script src="../static/js/common.js"></script>
+  <title>Home Librarian</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="stylesheet" href="../static/css/main.css" />
+  <link rel="stylesheet" href="../static/css/dashboard.css" />
+  <script src="../static/js/dashboard.js"></script>
+  <script src="../static/js/common.js"></script>
 </head>
 
 <body>
-    <div id="topBanner">
-        <div id="logoContainer" onclick="">
-            <img id="logo" src="../static/images/homelibrarian.svg">
-            <h2>Home Librarian</h2>
-        </div>
-        <div id="userSection" onclick="selectNewUser()"></div>
+  <div id="topBanner">
+    <div id="logoContainer" onclick="">
+      <img id="logo" src="../static/images/homelibrarian.svg">
+      <h2>Home Librarian</h2>
     </div>
-    <div id="bottomPane">
-        <a href="/dashboard">Dashboard</a>
-        <a href="/scanner">Search</a>
-        <a href="/scanner">Scanner</a>
-    </div>
+    <button id="userSection" onclick="selectNewUser()"></div>
+  </div>
+
+  <div id="contentContainer">
+  </div>
+
+  <div id="bottomPane">
+    <a href="/dashboard" class="navIcon navIconSelected"><img src="../static/images/dash-icon.svg"></a>
+    <a href="/scanner" class="navIcon"><img src="../static/images/search-icon.svg"></a>
+    <a href="/scanner" class="navIcon"><img src="../static/images/scanner-icon.svg"></a>
+  </div>
+
 </body>
 
 </html>
