@@ -19,7 +19,7 @@ async function setupCamera() {
 
 async function fetchBook(isbn) {
     swtichActionButtonMode('hidden')
-    const response = await fetch("/fetchBook", {
+    const response = await fetch("/api/fetchBook", {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json'
@@ -45,7 +45,7 @@ async function fetchBook(isbn) {
 async function postCurrentBook() {
     swtichActionButtonMode('hidden')
     infoString = window.localStorage.getItem("currentBook")
-    const response = await fetch("/addBook", {
+    const response = await fetch("/api/addBook", {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json'
@@ -133,10 +133,8 @@ async function main() {
     drawWebcamContinuous(barcodeDetector)
 }
 
-if (window.localStorage.getItem("currentUser").length < 1 
-|| window.localStorage.getItem("currentUserColor").length < 1) {
+if (!userIsSignedIn()) {
     window.location.href='/'
 }
-
 // Delay the camera request by a bit, until the main body has loaded
 document.addEventListener("DOMContentLoaded", main);

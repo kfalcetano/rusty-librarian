@@ -22,7 +22,7 @@ async function addUser() {
         alert("Please select a color")
         return 
     }
-    res = fetch("/addUser", {
+    res = fetch("/api/addUser", {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json'
@@ -46,7 +46,7 @@ async function setCurrentUser(e) {
 }
 
 async function fetchUsers() {
-    const response = await fetch("/getUsers")
+    const response = await fetch("/api/getUsers")
     let users = await response.json()
     ubunch = document.getElementById('userBunch')
     let content = ""
@@ -79,10 +79,9 @@ async function main() {
     }
 }
 
-if (window.localStorage.getItem("currentUser").length > 0 
-        && window.localStorage.getItem("currentUserColor").length > 0) {
-            window.location.href='/dashboard'
-    }
+if (userIsSignedIn()) {
+    window.location.href='/dashboard'
+}
 fetchUsers()
 
 window.addEventListener('DOMContentLoaded', main)

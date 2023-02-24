@@ -37,7 +37,7 @@ h2 {
 }
 
 #contentContainer {
-    overflow: scroll;
+    overflow: auto;
     flex-grow: 1;
     padding: var(--outer-padding);
     padding-bottom: 0;

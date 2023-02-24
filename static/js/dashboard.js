@@ -1,5 +1,5 @@
 async function getBookList() {
-    const response = await fetch("/getBookList")
+    const response = await fetch("/api/getBookList")
     books = await response.json()
     let content = ""
     for (const book of books) {
@@ -12,9 +12,7 @@ async function main() {
     setupUserData()
     getBookList()
 }
-
-if (window.localStorage.getItem("currentUser").length < 1 
-|| window.localStorage.getItem("currentUserColor").length < 1) {
+if (!userIsSignedIn()) {
     window.location.href='/'
 }
 document.addEventListener("DOMContentLoaded", main);

@@ -15,7 +15,7 @@ async function openBookPage(isbn) {
 }
 
 async function setupUserData (){
-    const response = await fetch("/getUsers")
+    const response = await fetch("/api/getUsers")
     let users = await response.json()
     for (const user of users) {
         if (user.name == window.localStorage.getItem("currentUser")) {
@@ -25,4 +25,8 @@ async function setupUserData (){
     }
     alert("The user you selected has been deleted :(")
     selectNewUser()
+}
+
+function userIsSignedIn() {
+    return (Boolean(window.localStorage.getItem("currentUser")) && Boolean(window.localStorage.getItem("currentUserColor")))
 }

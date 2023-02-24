@@ -17,17 +17,17 @@ async fn dashboard() -> Result<fs::NamedFile> {
     Ok(fs::NamedFile::open("pages/dashboard.html")?)
 }
 
-#[get("/getUsers")]
+#[get("/api/getUsers")]
 async fn get_users(db: Data<Database>,) ->Result<HttpResponse> {
     let mut cursor = db.collection::<dbstructs::User>("users").find(None, None).await.unwrap();
     let mut out: Vec<dbstructs::User> = vec![];
     while cursor.advance().await.unwrap() {
         out.push(cursor.deserialize_current().unwrap());
     }
-    Ok(HttpResponse::Ok().json(out))
+    Ok(HttpResponse::Ok().append_header(("Cache-Control", "no-cache")).json(out))
 }
 
-#[get("/getBookList")]
+#[get("/api/getBookList")]
 async fn get_book_list(db: Data<Database>,) ->Result<HttpResponse> {
     let mut cursor = db.collection::<dbstructs::BookListElement>("books").find(None, None).await.unwrap();
     let mut out: Vec<dbstructs::BookListElement> = vec![];
@@ -37,7 +37,7 @@ async fn get_book_list(db: Data<Database>,) ->Result<HttpResponse> {
     Ok(HttpResponse::Ok().json(out))
 }
 
-#[post("/addUser")]
+#[post("/api/addUser")]
 async fn add_user(db: Data<Database>, user_json: Json<dbstructs::User>) -> Result<HttpResponse, http_errors::DataError> {
     let user = user_json.into_inner();
     let mut cursor = db.collection::<dbstructs::User>("users").find(None, None).await.unwrap();
@@ -48,10 +48,10 @@ async fn add_user(db: Data<Database>, user_json: Json<dbstructs::User>) -> Resul
         }
     }
     db.collection::<dbstructs::User>("users").insert_one(user.clone(), None).await.unwrap();
-    Ok(HttpResponse::Ok().json(user))
+    Ok(HttpResponse::Ok().append_header(("Cache-Control", "no-cache")).json(user))
 }
 
-#[post("/fetchBook")]
+#[post("/api/fetchBook")]
 async fn fetch_book(db: Data<Database>, obj: Json<dbstructs::BookId>) -> Result<HttpResponse, Error> {
     let filter = doc! { "isbn": obj.isbn.clone() };
     let mut cursor = db.collection::<dbstructs::Book>("books").find(filter, None).await.unwrap();
@@ -59,15 +59,15 @@ async fn fetch_book(db: Data<Database>, obj: Json<dbstructs::BookId>) -> Result<
         let book = cursor.deserialize_current().unwrap();
         if obj.isbn == book.isbn {
             println!("{} already added", book.title);
-            return Ok(HttpResponse::Found().json(book))
+            return Ok(HttpResponse::Found().append_header(("Cache-Control", "no-cache")).json(book))
         }
     }
     let book_find: dbstructs::Volumes = reqwest::get(format!("{}{}&maxResults=1", GOOG_BOOK_ROUTE, &obj.isbn)).await.unwrap().json().await.unwrap();
     println!("{}", book_find.items[0].volumeInfo.title);
-    Ok(HttpResponse::Ok().json(&book_find.items[0].volumeInfo.into_book(obj.isbn.clone())))
+    Ok(HttpResponse::Ok().append_header(("Cache-Control", "no-cache")).json(&book_find.items[0].volumeInfo.into_book(obj.isbn.clone())))
 }
 
-#[post("/addBook")]
+#[post("/api/addBook")]
 async fn add_book(db: Data<Database>, book_json: Json<dbstructs::Book>) -> Result<HttpResponse, http_errors::DataError> {
     let book = book_json.into_inner();
     let filter = doc! { "isbn": book.isbn.clone() };
@@ -79,7 +79,7 @@ async fn add_book(db: Data<Database>, book_json: Json<dbstructs::Book>) -> Resul
         }
     }
     db.collection::<dbstructs::Book>("books").insert_one(book.clone(), None).await.unwrap();
-    Ok(HttpResponse::Ok().json(book))
+    Ok(HttpResponse::Ok().append_header(("Cache-Control", "no-cache")).json(book))
 }
 
 #[actix_web::main]
