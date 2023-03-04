@@ -60,6 +60,12 @@ async function postCurrentBook() {
     }
 }
 
+async function editCurrentBook() {
+    isbn = document.getElementById("bcstatus").innerHTML
+    console.log(isbn)
+    window.location.href = `/book/${isbn}`
+}
+
 function swtichActionButtonMode(mode) {
     let button = document.getElementById('actionButton')
     let img = button.getElementsByTagName('img')[0]
@@ -67,7 +73,7 @@ function swtichActionButtonMode(mode) {
         case "edit":
             img.src = "../static/images/edit.svg"
             //TODO: change to open book page
-            button.onclick = postCurrentBook
+            button.onclick = editCurrentBook
             button.style.display = "block"
             break;
         case "add":
@@ -117,6 +123,7 @@ async function main() {
         alert("Couldn't find a camera :(")
     }
 
+    window.localStorage.setItem("currentBook", "")
     setupUserData()
     
     video.play()

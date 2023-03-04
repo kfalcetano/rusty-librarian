@@ -1,9 +1,10 @@
 mod dbstructs;
 mod http_errors;
+
 use actix_files as fs;
-use actix_web::{ post, get, web::{self, Json}, App, Error, HttpResponse, Result, HttpServer, web::Data };
+use actix_web::{ post, get, web::{self, Json}, App, Error, HttpResponse, Result, HttpServer, web::Data};
 use openssl::ssl::{SslAcceptor, SslFiletype, SslMethod};
-use mongodb::{bson::doc, Client, Database};
+use mongodb::{bson::doc, Client, Database, options::FindOptions};
 
 const GOOG_BOOK_ROUTE: &str = "https://www.googleapis.com/books/v1/volumes?q=isbn%3D";
 
@@ -29,12 +30,41 @@ async fn get_users(db: Data<Database>,) ->Result<HttpResponse> {
 
 #[get("/api/getBookList")]
 async fn get_book_list(db: Data<Database>,) ->Result<HttpResponse> {
-    let mut cursor = db.collection::<dbstructs::BookListElement>("books").find(None, None).await.unwrap();
+    let find_options = FindOptions::builder().sort(doc! {"title": 1}).build();
+    let mut cursor = db.collection::<dbstructs::BookListElement>("books").find(None, find_options).await.unwrap();
     let mut out: Vec<dbstructs::BookListElement> = vec![];
     while cursor.advance().await.unwrap() {
         out.push(cursor.deserialize_current().unwrap());
     }
     Ok(HttpResponse::Ok().json(out))
+}
+
+#[get("/book/{isbn}")]
+async fn book_page(db: Data<Database>, isbn: web::Path<String>) -> Result<fs::NamedFile, http_errors::DataError> {
+    let id = isbn.into_inner();
+    let filter = doc! { "isbn": &id };
+    let mut cursor = db.collection::<dbstructs::BookListElement>("books").find(filter, None).await.unwrap();
+    while cursor.advance().await.unwrap() {
+        let book = cursor.deserialize_current().unwrap();
+        if id == book.isbn {
+            return Ok(fs::NamedFile::open("pages/bookpage.html").unwrap())
+        }
+    }
+    return Err(http_errors::DataError::BookNotFound)
+}
+
+#[get("/api/book/{isbn}")]
+async fn get_book(db: Data<Database>, isbn: web::Path<String>) -> Result<HttpResponse> {
+    let id = isbn.into_inner();
+    let filter = doc! { "isbn": &id };
+    let mut cursor = db.collection::<dbstructs::Book>("books").find(filter, None).await.unwrap();
+    while cursor.advance().await.unwrap() {
+        let book = cursor.deserialize_current().unwrap();
+        if id == book.isbn {
+            return Ok(HttpResponse::Ok().append_header(("Cache-Control", "no-cache")).json(book))
+        }
+    }
+    return Ok(HttpResponse::NotFound().json(format!("Book with isbn {} not found", id)))
 }
 
 #[post("/api/addUser")]
@@ -109,7 +139,9 @@ async fn main() -> std::io::Result<()> {
                         .service(fetch_book)
                         .service(add_book)
                         .service(add_user)
-                        .service(get_book_list))
+                        .service(get_book_list)
+                        .service(book_page)
+                        .service(get_book))
         .bind_openssl("0.0.0.0:8100", builder)?
         .run()
         .await

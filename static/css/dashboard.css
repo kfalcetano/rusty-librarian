@@ -1,6 +1,6 @@
 .bookListElement {
-    margin-bottom: 2vmin;
-    padding: 2vmin 4vmin;
+    margin-bottom: var(--inner-padding);
+    padding: var(--inner-padding);
     background-color: var(--bg-secondary);
     width: 100%;
     box-sizing: border-box;

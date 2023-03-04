@@ -1,0 +1,34 @@
+#contentContainer {
+    display: flex;
+    flex-wrap: wrap;
+    flex-grow: 0;
+    padding-top: 0;
+    gap: 14px;
+}
+
+.bookCard {
+    width: unset;
+    max-width: unset;
+    flex-grow: 1;
+    align-self: flex-start;
+}
+
+h3 {
+    margin: 0px 8px 0px 8px;
+    font-size: 18px;
+}
+
+.column {
+    flex-direction: column;
+    flex-basis: 600px;
+    flex-grow: 9999;
+    gap: 8px;
+}
+
+.back-button {
+    padding: var(--inner-padding);
+}
+.back-button > img {
+    height: var(--logo-height);
+    display: block;
+}

@@ -11,7 +11,7 @@ async function applyUserData() {
 }
 
 async function openBookPage(isbn) {
-    console.log(isbn)
+    window.location.href=`/book/${isbn}`
 }
 
 async function setupUserData (){

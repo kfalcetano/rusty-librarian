@@ -11,11 +11,11 @@
     --bg-primary: #101010;
     --bg-pane: #171717;
     --bg-secondary: #303030;
-    --outer-padding: 4vmin;
-    --inner-padding: 2vmin;
-    --standard-radius: calc(10px + 2vmin);
+    --outer-padding: calc(15px + .5vmin);
+    --inner-padding: calc(10px + .5vmin);
+    --standard-radius: 20px;
     --thumbnail-height: 183px;
-    --logo-height: calc(30px + 2vmin);
+    --logo-height: 36px;
 }
 
 body {
@@ -27,12 +27,15 @@ body {
     margin: 0px;
     font-family: 'Open Sans', Helvetica, Arial, sans-serif;
     color: #d3d3d3;
-    font-size: calc(10px + 1vmin);
+    font-size: 16px;
+    max-width: 1920px;
+    margin-left: auto;
+    margin-right: auto;
 }
 
 h2 {
     font-weight: normal;
-    font-size: calc(15px + 1vmin);
+    font-size: 22px;
     margin: 5px 0px 5px 0px;
 }
 
@@ -60,11 +63,30 @@ h2 {
     background-color: #303030;
 }
 
+.bookCard {
+    display: flex;
+    justify-content: flex-start;
+    align-items: flex-start;
+    gap: var(--outer-padding);
+    background-color: #252525;
+    padding: var(--inner-padding);
+    border-radius: var(--standard-radius);
+    width: 100%;
+    max-width: 500px;
+    box-sizing: border-box;
+}
+
+#thumb {
+    height: var(--thumbnail-height);
+    width: auto;
+    border-radius: 18px;
+}
+
 #topBanner {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 10px 10px var(--inner-padding) var(--outer-padding);
+    padding: var(--outer-padding);
     gap: 1rem;
     background-color: var(--bg-pane);
 }
@@ -77,7 +99,7 @@ h2 {
 }
 #userSection {
     right: var(--outer-padding);
-    padding: .5rem 1rem .5rem 1rem;
+    padding: var(--inner-padding);
     background-color: #444444;
     border-radius: 99em;
     cursor: pointer;
