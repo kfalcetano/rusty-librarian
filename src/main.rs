@@ -4,7 +4,8 @@ mod http_errors;
 use actix_files as fs;
 use actix_web::{ post, get, web::{self, Json}, App, Error, HttpResponse, Result, HttpServer, web::Data};
 use openssl::ssl::{SslAcceptor, SslFiletype, SslMethod};
-use mongodb::{bson::doc, Client, Database, options::FindOptions};
+use mongodb::{bson::{doc, Document}, Client, Database, options::FindOptions, Collection};
+use serde_json::json;
 
 const GOOG_BOOK_ROUTE: &str = "https://www.googleapis.com/books/v1/volumes?q=isbn%3D";
 
@@ -18,24 +19,25 @@ async fn dashboard() -> Result<fs::NamedFile> {
     Ok(fs::NamedFile::open("pages/dashboard.html")?)
 }
 
+async fn find_in_collection<T: serde::de::DeserializeOwned>(collection: Collection<T>, filter: Option<Document>, options: Option<FindOptions>) -> Result<Vec<T>, mongodb::error::Error> {
+    let mut cursor= collection.find(filter, options).await?;
+    let mut out: Vec<T> = vec![];
+    while cursor.advance().await.unwrap() {
+        out.push(cursor.deserialize_current()?);
+    }
+    Ok(out)
+}
+
 #[get("/api/getUsers")]
 async fn get_users(db: Data<Database>,) ->Result<HttpResponse> {
-    let mut cursor = db.collection::<dbstructs::User>("users").find(None, None).await.unwrap();
-    let mut out: Vec<dbstructs::User> = vec![];
-    while cursor.advance().await.unwrap() {
-        out.push(cursor.deserialize_current().unwrap());
-    }
+    let out = find_in_collection(db.collection::<dbstructs::User>("users"), None, None).await.unwrap();
     Ok(HttpResponse::Ok().append_header(("Cache-Control", "no-cache")).json(out))
 }
 
 #[get("/api/getBookList")]
 async fn get_book_list(db: Data<Database>,) ->Result<HttpResponse> {
     let find_options = FindOptions::builder().sort(doc! {"title": 1}).build();
-    let mut cursor = db.collection::<dbstructs::BookListElement>("books").find(None, find_options).await.unwrap();
-    let mut out: Vec<dbstructs::BookListElement> = vec![];
-    while cursor.advance().await.unwrap() {
-        out.push(cursor.deserialize_current().unwrap());
-    }
+    let out=find_in_collection(db.collection::<dbstructs::BookListElement>("books"), None, Some(find_options)).await.unwrap();
     Ok(HttpResponse::Ok().json(out))
 }
 
@@ -73,7 +75,6 @@ async fn add_user(db: Data<Database>, user_json: Json<dbstructs::User>) -> Resul
     let mut cursor = db.collection::<dbstructs::User>("users").find(None, None).await.unwrap();
     while cursor.advance().await.unwrap() {
         if user.name == cursor.deserialize_current().unwrap().name {
-            println!("User {} already added", user.name);
             return Err(http_errors::DataError::DuplicateUser)
         }
     }
@@ -88,7 +89,6 @@ async fn fetch_book(db: Data<Database>, obj: Json<dbstructs::BookId>) -> Result<
     while cursor.advance().await.unwrap() {
         let book = cursor.deserialize_current().unwrap();
         if obj.isbn == book.isbn {
-            println!("{} already added", book.title);
             return Ok(HttpResponse::Found().append_header(("Cache-Control", "no-cache")).json(book))
         }
     }
@@ -110,6 +110,18 @@ async fn add_book(db: Data<Database>, book_json: Json<dbstructs::Book>) -> Resul
     }
     db.collection::<dbstructs::Book>("books").insert_one(book.clone(), None).await.unwrap();
     Ok(HttpResponse::Ok().append_header(("Cache-Control", "no-cache")).json(book))
+}
+
+#[post("/api/deleteBook")]
+async fn delete_book(db: Data<Database>, obj: Json<dbstructs::BookId>) -> Result<HttpResponse, Error> {
+    let dr = db.collection::<dbstructs::Book>("books").delete_one(doc! {"isbn": obj.isbn.clone()}, None).await.unwrap();
+    Ok(HttpResponse::Ok().append_header(("Cache-Control", "no-cache")).json(json!({"num_deleted": dr.deleted_count})))
+}
+
+#[post("/api/deleteUser")]
+async fn delete_user(db: Data<Database>, obj: Json<dbstructs::User>) -> Result<HttpResponse, Error> {
+    let dr = db.collection::<dbstructs::Book>("users").delete_one(doc! {"name": obj.name.clone()}, None).await.unwrap();
+    Ok(HttpResponse::Ok().append_header(("Cache-Control", "no-cache")).json(json!({"num_deleted": dr.deleted_count})))
 }
 
 #[actix_web::main]
@@ -141,7 +153,9 @@ async fn main() -> std::io::Result<()> {
                         .service(add_user)
                         .service(get_book_list)
                         .service(book_page)
-                        .service(get_book))
+                        .service(get_book)
+                        .service(delete_book)
+                        .service(delete_user))
         .bind_openssl("0.0.0.0:8100", builder)?
         .run()
         .await

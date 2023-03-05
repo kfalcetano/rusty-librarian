@@ -11,9 +11,14 @@
 </head>
 
 <body>
-  <button class="back-button" onclick="history.back()='/'">
-    <img src="../static/images/arrow_back.svg">
-  </button>
+  <div class="top-bar">
+    <button class="top-button" onclick="history.back()">
+      <img src="../static/images/arrow_back.svg">
+    </button>
+    <button class="top-button" onclick="deleteBook()">
+      <img src="../static/images/delete.svg">
+    </button>
+  </div>
   <div id="contentContainer">
     <div class="bookCard">
       <img id="thumb" src="../static/images/no_book.svg">
@@ -21,9 +26,9 @@
         <h2>Book Info Will Go Here</h2>
       </div>
     </div>
-    <div class="bookCard column">
+    <div class="bookCard column" onclick="let x = document.getElementById('description'); x.hidden = !x.hidden">
       <h3>Description</h3>
-      <div id="description"></div>
+      <div id="description" hidden></div>
     </div>
   </div>
 

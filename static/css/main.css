@@ -133,6 +133,6 @@ div {
 input {
     all: unset;
     background-color: var(--bg-secondary);
-    padding: 2vmin;
+    padding: var(--inner-padding);
     border-radius: 99em;
 }

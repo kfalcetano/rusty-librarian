@@ -61,6 +61,17 @@ async function deselectSwatch() {
     if(sel) {sel.classList.remove("selected-swatch")}
 }
 
+async function editUsersMode() {
+    us = document.getElementById("userSection")
+    us.style.display = "none"
+
+    addButton = document.getElementById("addUser")
+    addButton.onclick = () => {
+        us = document.getElementById("userSection")
+        us.style.display = "block"
+    }
+}
+
 async function main() {
     document.addEventListener('click', event => {
         if (event.target.classList.contains('modal')) {

@@ -13,7 +13,7 @@
     inset: 0;
     z-index: 10000;
     background-color: rgba(0, 0, 0, .75);
-    padding: 2vmin;
+    padding: var(--outer-padding);
     overflow: auto;
 }
 .modal.open {
@@ -41,7 +41,7 @@ body.modal-open {
 
 #colorSelection {
     display: flex;
-    justify-content: center;
+    justify-content: space-evenly;
     align-items: center;
     gap: 2vmin;
 }
@@ -59,11 +59,12 @@ body.modal-open {
 .userTile {
     display: block;
     text-align: center;
-    height: 20vmin;
-    width: 20vmin;
+    height: 90px;
+    width: 90px;
     background-color: rgb(58, 56, 32);
     border-radius: var(--standard-radius);
-    font-size: 4vmin;
+    padding: var(--inner-padding);
+    font-size: 22px;
     transition: transform .15s;
     transition-timing-function: ease-in-out;
     word-wrap: break-word;
@@ -85,7 +86,7 @@ body.modal-open {
     flex-direction: row;
     flex-wrap: wrap;
     justify-content: center;
-    gap: 5vmin;
+    gap: 20px;
     margin-bottom: var(--outer-padding);
 }
 
@@ -93,8 +94,8 @@ body.modal-open {
     display: flex;
     justify-content: center;
     align-items: center;
-    height: 15vmin;
-    width: 15vmin;
+    height: 60px;
+    width: 60px;
     border-radius: var(--standard-radius);
     background-color: #383838;
     font-weight: 900;
@@ -103,15 +104,15 @@ body.modal-open {
 }
 #addUser > img {
     object-fit: fill;
-    height: 5vmin;
-    width: 5vmin;
+    height: 30px;
+    width: 30px;
     transition: height .2s, width .2s;
     transition-timing-function: ease-in-out;
 }
 @media(hover: hover) and (pointer: fine) {
     #addUser:hover > img {
-        height: 6vmin;
-        width: 6vmin;
+        height: 35px;
+        width: 35px;
     }
 }
 

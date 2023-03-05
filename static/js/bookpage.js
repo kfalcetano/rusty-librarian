@@ -1,3 +1,15 @@
+async function deleteBook() {
+    isbn = window.location.toString().split('/').pop()
+    fetch("/api/deleteBook", {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({isbn: String(isbn)})
+    }).then(() => window.location.href = "/")
+    
+}
+
 async function main() {
     isbn = window.location.toString().split('/').pop()
     const response = await fetch(`/api/book/${isbn}`)

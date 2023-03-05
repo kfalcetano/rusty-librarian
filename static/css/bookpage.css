@@ -23,12 +23,21 @@ h3 {
     flex-basis: 600px;
     flex-grow: 9999;
     gap: 8px;
+    user-select: none;
+    cursor: pointer;
 }
 
-.back-button {
+.top-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
     padding: var(--inner-padding);
 }
-.back-button > img {
+
+.top-button {
+    padding: var(--inner-padding);
+}
+.top-button > img {
     height: var(--logo-height);
     display: block;
 }

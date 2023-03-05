@@ -24,7 +24,7 @@
 }
 
 #actionButton {
-    align-self: flex-end;
+    align-self: flex-start;
     justify-self: flex-end;
     border-radius: var(--standard-radius);
     display: none;
