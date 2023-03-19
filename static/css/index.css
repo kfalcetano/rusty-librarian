@@ -27,6 +27,8 @@
     background-color: #202020;
     border-radius: var(--standard-radius);
     max-width: 800px;
+    margin-left: auto;
+    margin-right: auto;
 }
 body.modal-open {
     overflow: hidden;
@@ -56,8 +58,14 @@ body.modal-open {
     border: calc(.2vmin + 2px) solid white;
 }
 
+.tileWrapper {
+    position: relative;
+    transition: transform .15s;
+    transition-timing-function: ease-in-out;
+}
 .userTile {
     display: block;
+    position: static;
     text-align: center;
     height: 90px;
     width: 90px;
@@ -65,20 +73,35 @@ body.modal-open {
     border-radius: var(--standard-radius);
     padding: var(--inner-padding);
     font-size: 22px;
-    transition: transform .15s;
-    transition-timing-function: ease-in-out;
     word-wrap: break-word;
     overflow: hidden;
     text-overflow: clip;
     cursor: pointer;
 }
 @media(hover: hover) and (pointer: fine) {
-    .userTile:hover {
+    .tileWrapper:hover {
         transform: translate(0px, -1vmin);
     }
 }
 .userTile:active {
     transform: translate(0px, -1vmin);
+}
+
+.userDelete {
+    display: none;
+    justify-content: center;
+    align-items: center;
+    position: absolute;
+    height: 40px;
+    width: 40px;
+    top: -10px;
+    right: -10px;
+    background-color: #5e5e5e;
+    border-radius: 99em;
+}
+.userDelete > img {
+    display: block;
+    height: 30px;
 }
 
 #userBunch {

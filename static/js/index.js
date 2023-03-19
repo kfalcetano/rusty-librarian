@@ -39,8 +39,19 @@ async function addUser() {
     await fetchUsers()
 }
 
+async function deleteUser(name) {
+    const res = await fetch("/api/deleteUser", {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({name: String(name), color: ""})
+    })
+    fetchUsers()
+}
+
 async function setCurrentUser(e) {
-    window.localStorage.setItem("currentUser", e.innerHTML)
+    window.localStorage.setItem("currentUser", e.innerText)
     window.localStorage.setItem("currentUserColor", e.style.backgroundColor)
     window.location.href = "/dashboard"
 }
@@ -51,7 +62,12 @@ async function fetchUsers() {
     ubunch = document.getElementById('userBunch')
     let content = ""
     users.forEach(user => {
-        content += `<button class=\"userTile\" style=\"background-color: ${user.color}\" onclick=\"setCurrentUser(this)\">${user.name}</button>`
+        content += `<div class="tileWrapper">
+                    <button class=\"userTile\" style=\"background-color: ${user.color}\" onclick=\"setCurrentUser(this)\">
+                        ${user.name}
+                        <div class="userDelete" onclick="deleteUser(\'${user.name}\')"><img src="../static/images/delete.svg"></div>
+                    </button>
+                    </div>`
     });
     ubunch.innerHTML = content
 }
@@ -69,6 +85,21 @@ async function editUsersMode() {
     addButton.onclick = () => {
         us = document.getElementById("userSection")
         us.style.display = "block"
+        addButton.onclick = () => openModal('addUserForm')
+        let dels = document.getElementsByClassName("userDelete")
+        for (var i = 0; i < dels.length; i++) {
+            dels[i].style.display = "none"
+        }
+    }
+
+    let dels = document.getElementsByClassName("userDelete")
+    for (var i = 0; i < dels.length; i++) {
+        dels[i].style.display = "flex"
+    }
+
+    let users = document.getElementsByClassName("userTile")
+    for (user of users) {
+        user.onclick = ""
     }
 }
 
