@@ -40,13 +40,14 @@ async function addUser() {
 }
 
 async function deleteUser(name) {
-    const res = await fetch("/api/deleteUser", {
+    await fetch("/api/deleteUser", {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json'
         },
         body: JSON.stringify({name: String(name), color: ""})
     })
+    disableEditUsersMode()
     fetchUsers()
 }
 
@@ -79,28 +80,43 @@ async function deselectSwatch() {
 
 async function editUsersMode() {
     us = document.getElementById("userSection")
-    us.style.display = "none"
+    us.style.visibility = "hidden"
 
     addButton = document.getElementById("addUser")
-    addButton.onclick = () => {
-        us = document.getElementById("userSection")
-        us.style.display = "block"
-        addButton.onclick = () => openModal('addUserForm')
-        let dels = document.getElementsByClassName("userDelete")
-        for (var i = 0; i < dels.length; i++) {
-            dels[i].style.display = "none"
-        }
-    }
+    addButton.getElementsByTagName('img')[0].style.transform = "rotate(45deg)"
+    addButton.type = "button"
+    addButton.onclick = () => disableEditUsersMode()
 
     let dels = document.getElementsByClassName("userDelete")
-    for (var i = 0; i < dels.length; i++) {
-        dels[i].style.display = "flex"
+    for (del of dels) {
+        del.style.display = "flex"
     }
 
     let users = document.getElementsByClassName("userTile")
     for (user of users) {
-        user.onclick = ""
+        user.onclick = "null"
+        user.style.cursor = "default"
     }
+}
+
+async function disableEditUsersMode() {
+    us = document.getElementById("userSection")
+    us.style.visibility = "visible"
+
+    let dels = document.getElementsByClassName("userDelete")
+    for (del of dels) {
+        del.style.display = "none"
+    }
+
+    let users = document.getElementsByClassName("userTile")
+    for (user of users) {
+        user.onclick = function() { setCurrentUser(this) }
+        user.style.cursor = "pointer"
+    }
+
+    addButton = document.getElementById("addUser")
+    addButton.getElementsByTagName('img')[0].style.transform = "rotate(0)"
+    addButton.onclick = () => openModal('addUserForm')
 }
 
 async function main() {

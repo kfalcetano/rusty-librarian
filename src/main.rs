@@ -4,7 +4,7 @@ mod http_errors;
 use actix_files as fs;
 use actix_web::{ post, get, web::{self, Json}, App, Error, HttpResponse, Result, HttpServer, web::Data};
 use openssl::ssl::{SslAcceptor, SslFiletype, SslMethod};
-use mongodb::{bson::{doc, Document}, Client, Database, options::FindOptions, Collection};
+use mongodb::{bson, bson::{doc, Document}, Client, Database, options::FindOptions, Collection};
 use serde_json::json;
 
 const GOOG_BOOK_ROUTE: &str = "https://www.googleapis.com/books/v1/volumes?q=isbn%3D";
@@ -83,16 +83,16 @@ async fn add_user(db: Data<Database>, user_json: Json<dbstructs::User>) -> Resul
 }
 
 #[post("/api/fetchBook")]
-async fn fetch_book(db: Data<Database>, obj: Json<dbstructs::BookId>) -> Result<HttpResponse, Error> {
+async fn fetch_book(db: Data<Database>, obj: Json<dbstructs::BookId>) -> Result<HttpResponse, Box<dyn std::error::Error>> {
     let filter = doc! { "isbn": obj.isbn.clone() };
-    let mut cursor = db.collection::<dbstructs::Book>("books").find(filter, None).await.unwrap();
-    while cursor.advance().await.unwrap() {
-        let book = cursor.deserialize_current().unwrap();
+    let mut cursor = db.collection::<dbstructs::Book>("books").find(filter, None).await?;
+    while cursor.advance().await? {
+        let book = cursor.deserialize_current()?;
         if obj.isbn == book.isbn {
             return Ok(HttpResponse::Found().append_header(("Cache-Control", "no-cache")).json(book))
         }
     }
-    let book_find: dbstructs::Volumes = reqwest::get(format!("{}{}&maxResults=1", GOOG_BOOK_ROUTE, &obj.isbn)).await.unwrap().json().await.unwrap();
+    let book_find: dbstructs::Volumes = reqwest::get(format!("{}{}&maxResults=1", GOOG_BOOK_ROUTE, &obj.isbn)).await?.json().await?;
     println!("{}", book_find.items[0].volumeInfo.title);
     Ok(HttpResponse::Ok().append_header(("Cache-Control", "no-cache")).json(&book_find.items[0].volumeInfo.into_book(obj.isbn.clone())))
 }
@@ -114,14 +114,46 @@ async fn add_book(db: Data<Database>, book_json: Json<dbstructs::Book>) -> Resul
 
 #[post("/api/deleteBook")]
 async fn delete_book(db: Data<Database>, obj: Json<dbstructs::BookId>) -> Result<HttpResponse, Error> {
-    let dr = db.collection::<dbstructs::Book>("books").delete_one(doc! {"isbn": obj.isbn.clone()}, None).await.unwrap();
+    let dr = db.collection::<dbstructs::Book>("books").delete_one(doc!{"isbn": obj.isbn.clone()}, None).await.unwrap();
     Ok(HttpResponse::Ok().append_header(("Cache-Control", "no-cache")).json(json!({"num_deleted": dr.deleted_count})))
 }
 
 #[post("/api/deleteUser")]
 async fn delete_user(db: Data<Database>, obj: Json<dbstructs::User>) -> Result<HttpResponse, Error> {
-    let dr = db.collection::<dbstructs::Book>("users").delete_one(doc! {"name": obj.name.clone()}, None).await.unwrap();
+    let dr = db.collection::<dbstructs::Book>("users").delete_one(doc!{"name": obj.name.clone()}, None).await.unwrap();
     Ok(HttpResponse::Ok().append_header(("Cache-Control", "no-cache")).json(json!({"num_deleted": dr.deleted_count})))
+}
+
+#[post("/api/addComment/{isbn}")]
+async fn add_comment(db: Data<Database>, isbn: web::Path<String>, comment: Json<dbstructs::Comment>) -> Result<HttpResponse, Error> {
+    let filter = doc!{"isbn": isbn.into_inner()};
+    let update = doc!{"$push": {"comments": bson::to_bson(&comment.into_inner()).unwrap()}};
+    db.collection::<dbstructs::Book>("books").update_one(filter, update, None).await.unwrap();
+    Ok(HttpResponse::Ok().append_header(("Cache-Control", "no-cache")).json(json!({"message": "added comment"})))
+}
+
+#[post("/api/rateBook/{isbn}")]
+async fn rate_book(db: Data<Database>, isbn: web::Path<String>, rating: Json<dbstructs::Rating>) -> Result<HttpResponse, http_errors::DataError> {
+    let coll = db.collection::<dbstructs::Book>("books");
+    let filter = doc!{"isbn": isbn.clone()};
+    let book = coll.find_one(filter.clone(), None).await.unwrap();
+    if book.is_none() {
+        return Err(http_errors::DataError::BookNotFound)
+    }
+    match book.unwrap().ratings.iter().find(|x| x.username == rating.username) {
+        Some(_) => {
+            let filter2 = doc!{"isbn": isbn.into_inner(), "ratings.username": rating.username.clone()};
+            let edit_update = doc!{"$set": {"ratings.$": bson::to_bson(&rating.into_inner()).unwrap()}};
+            let options = mongodb::options::UpdateOptions::builder().upsert(Some(true)).build();
+            coll.update_one(filter2, edit_update, options).await.unwrap();
+            Ok(HttpResponse::Ok().append_header(("Cache-Control", "no-cache")).json(json!({"message": "updated rating"})))
+        }
+        None => {
+            let push_update = doc!{"$push": {"ratings": bson::to_bson(&rating.into_inner()).unwrap()}};
+            coll.update_one(filter, push_update, None).await.unwrap();
+            Ok(HttpResponse::Ok().append_header(("Cache-Control", "no-cache")).json(json!({"message": "added rating"})))
+        }
+    }
 }
 
 #[actix_web::main]
@@ -155,7 +187,9 @@ async fn main() -> std::io::Result<()> {
                         .service(book_page)
                         .service(get_book)
                         .service(delete_book)
-                        .service(delete_user))
+                        .service(delete_user)
+                        .service(add_comment)
+                        .service(rate_book))
         .bind_openssl("0.0.0.0:8100", builder)?
         .run()
         .await

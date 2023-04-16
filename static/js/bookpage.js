@@ -21,6 +21,11 @@ async function main() {
         + "<b>Published: </b>" + book.publishedDate
     document.getElementById('thumb').src = book.imageLinks.thumbnail
     document.getElementById('description').innerHTML = book.description
+    comment_section = ""
+    for(comment of book.comments) {
+        comment_section += "<p>" + comment.content + "<br> - " + comment.username + "</p>"
+    }
+    document.getElementById('comments').innerHTML = comment_section
 }
 
 document.addEventListener("DOMContentLoaded", main);

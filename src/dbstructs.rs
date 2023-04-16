@@ -1,4 +1,5 @@
 use serde::{Deserialize, Serialize};
+use serde_repr::{Serialize_repr, Deserialize_repr};
 
 // Simplify the struct definitions with this macro:
 macro_rules! pub_struct {
@@ -16,7 +17,7 @@ pub_struct!(User {
     color: String,
 });
 
-pub_struct!(BookId { 
+pub_struct!(BookId {
     isbn: String,
 });
 
@@ -54,7 +55,6 @@ pub_struct!(Book {
     categories: Vec<String>,
     ratings: Vec<Rating>,
     comments: Vec<Comment>,
-    readBy: Vec<User>,
 });
 
 pub_struct!(BookListElement {
@@ -64,12 +64,22 @@ pub_struct!(BookListElement {
 });
 
 pub_struct!(Rating {
-    user: User,
-    stars: u8,
+    username: String,
+    stars: Stars,
 });
 
+#[derive(Serialize_repr, Deserialize_repr, PartialEq, Clone)]
+#[repr(u8)]
+pub enum Stars {
+    One = 1,
+    Two = 2,
+    Three = 3,
+    Four = 4,
+    Five = 5,
+}
+
 pub_struct!(Comment {
-    user: User,
+    username: String,
     content: String,
 });
 
@@ -92,7 +102,6 @@ impl VolumeInfo {
             categories: self.categories.to_owned(),
             ratings: vec![],
             comments: vec![],
-            readBy: vec![]
         }
     }
 }
