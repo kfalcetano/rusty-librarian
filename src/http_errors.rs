@@ -11,6 +11,8 @@ pub enum DataError {
     DuplicateUser,
     #[display(fmt = "Book already exists")]
     DuplicateBook,
+    #[display(fmt = "User not found")]
+    UserNotFound,
     #[display(fmt = "<h1>404 Error</h1>Book not found")]
     BookNotFound,
 }
@@ -24,6 +26,7 @@ impl error::ResponseError for DataError {
 
     fn status_code(&self) -> StatusCode {
         match *self {
+            DataError::UserNotFound => StatusCode::NOT_FOUND,
             DataError::DuplicateUser => StatusCode::CONFLICT,
             DataError::DuplicateBook => StatusCode::CONFLICT,
             DataError::BookNotFound => StatusCode::NOT_FOUND

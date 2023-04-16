@@ -133,24 +133,25 @@ async fn add_comment(db: Data<Database>, isbn: web::Path<String>, comment: Json<
 }
 
 #[post("/api/rateBook/{isbn}")]
-async fn rate_book(db: Data<Database>, isbn: web::Path<String>, rating: Json<dbstructs::Rating>) -> Result<HttpResponse, http_errors::DataError> {
+async fn rate_book(db: Data<Database>, isbn: web::Path<String>, rating: Json<dbstructs::Rating>) -> Result<HttpResponse, Box<dyn std::error::Error>> {
     let coll = db.collection::<dbstructs::Book>("books");
-    let filter = doc!{"isbn": isbn.clone()};
-    let book = coll.find_one(filter.clone(), None).await.unwrap();
+    let book = coll.find_one(doc!{"isbn": isbn.clone()}, None).await?;
     if book.is_none() {
-        return Err(http_errors::DataError::BookNotFound)
+        return Err(Box::new(http_errors::DataError::BookNotFound))
+    }
+    if db.collection::<dbstructs::User>("users").find_one(doc!{"name": rating.username.clone()}, None).await?.is_none() {
+        return Err(Box::new(http_errors::DataError::UserNotFound))
     }
     match book.unwrap().ratings.iter().find(|x| x.username == rating.username) {
         Some(_) => {
-            let filter2 = doc!{"isbn": isbn.into_inner(), "ratings.username": rating.username.clone()};
-            let edit_update = doc!{"$set": {"ratings.$": bson::to_bson(&rating.into_inner()).unwrap()}};
-            let options = mongodb::options::UpdateOptions::builder().upsert(Some(true)).build();
-            coll.update_one(filter2, edit_update, options).await.unwrap();
+            let filter = doc!{"isbn": isbn.clone(), "ratings.username": rating.username.clone()};
+            let edit_update = doc!{"$set": {"ratings.$": bson::to_bson(&rating.into_inner())?}};
+            coll.update_one(filter, edit_update, None).await?;
             Ok(HttpResponse::Ok().append_header(("Cache-Control", "no-cache")).json(json!({"message": "updated rating"})))
         }
         None => {
-            let push_update = doc!{"$push": {"ratings": bson::to_bson(&rating.into_inner()).unwrap()}};
-            coll.update_one(filter, push_update, None).await.unwrap();
+            let push_update = doc!{"$push": {"ratings": bson::to_bson(&rating.into_inner())?}};
+            coll.update_one(doc!{"isbn": isbn.into_inner()}, push_update, None).await?;
             Ok(HttpResponse::Ok().append_header(("Cache-Control", "no-cache")).json(json!({"message": "added rating"})))
         }
     }
