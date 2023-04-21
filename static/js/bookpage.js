@@ -23,21 +23,29 @@ async function rate(stars) {
 }
 
 async function updateStars() {
-    isbn = window.location.toString().split('/').pop()
+    let isbn = window.location.toString().split('/').pop()
     const response = await fetch(`/api/book/${isbn}`)
-    book = await response.json()
+    let book = await response.json()
     
-    avg_rating = 0
-    my_rating = 0
+    let sum = 0
+    let my_rating = 0
     for (rating of book.ratings) {
-        avg_rating = avg_rating + rating.stars
+        avg_rating = sum + rating.stars
         if (rating.username == window.localStorage.getItem("currentUser")) {
             my_rating = rating.stars
         }
     }
-    avg_rating = avg_rating / book.ratings.length
 
-    document.getElementById('avgStars').innerHTML = `Average: ${avg_rating} Stars`
+    let msg
+    if (sum > 0) {
+        msg = `Average: ${sum / book.ratings.length} Stars`
+    }
+    else {
+        msg = "No ratings yet."
+    }
+    
+
+    document.getElementById('avgStars').innerHTML = msg
     out = ""
     for(let i = 1; i <= my_rating; i++) {
         out += `<img id=star${i} class="star" src="../static/images/star_filled.svg" onclick="rate(${i})" />`
