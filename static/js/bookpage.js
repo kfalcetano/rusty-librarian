@@ -30,7 +30,7 @@ async function updateStars() {
     let sum = 0
     let my_rating = 0
     for (rating of book.ratings) {
-        avg_rating = sum + rating.stars
+        sum = sum + rating.stars
         if (rating.username == window.localStorage.getItem("currentUser")) {
             my_rating = rating.stars
         }
