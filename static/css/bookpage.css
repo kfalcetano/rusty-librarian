@@ -41,3 +41,11 @@ h3 {
     height: var(--logo-height);
     display: block;
 }
+
+#stars {
+    margin-top: 10px;
+}
+.star {
+    height: 30px;
+    cursor: pointer;
+}

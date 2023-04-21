@@ -61,6 +61,7 @@ pub_struct!(BookListElement {
     isbn: String,
     title: String,
     authors: Vec<String>,
+    imageLinks: ImageLinks,
 });
 
 pub_struct!(Rating {
