@@ -37,7 +37,7 @@ async function updateStars() {
     }
     avg_rating = avg_rating / book.ratings.length
 
-    document.getElementById('avgStars').innerHTML = `${avg_rating} Stars`
+    document.getElementById('avgStars').innerHTML = `Average: ${avg_rating} Stars`
     out = ""
     for(let i = 1; i <= my_rating; i++) {
         out += `<img id=star${i} class="star" src="../static/images/star_filled.svg" onclick="rate(${i})" />`
