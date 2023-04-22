@@ -55,6 +55,7 @@ pub_struct!(Book {
     categories: Vec<String>,
     ratings: Vec<Rating>,
     comments: Vec<Comment>,
+    notes: Vec<Note>,
 });
 
 pub_struct!(BookListElement {
@@ -114,6 +115,11 @@ pub_struct!(Comment {
     content: String,
 });
 
+pub_struct!(Note {
+    username: String,
+    content: String,
+});
+
 pub_struct!(ImageLinks {
     smallThumbnail: String,
     thumbnail: String,
@@ -133,6 +139,7 @@ impl VolumeInfo {
             categories: self.categories.to_owned(),
             ratings: vec![],
             comments: vec![],
+            notes: vec![],
         }
     }
 }
