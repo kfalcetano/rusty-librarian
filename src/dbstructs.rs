@@ -62,7 +62,37 @@ pub_struct!(BookListElement {
     title: String,
     authors: Vec<String>,
     imageLinks: ImageLinks,
+    ratings: Vec<Rating>,
+    categories: Vec<String>,
 });
+
+pub_struct!(BookListQuery {
+    username: Option<String>,
+    filter: Option<BookListFilter>,
+    sort: Option<BookListSort>,
+    direction: Option<SortDirection>,
+});
+
+#[derive(Serialize, Deserialize, PartialEq, Clone)]
+pub enum BookListFilter {
+    Read,
+    Unread,
+    Both
+}
+
+#[derive(Serialize, Deserialize, PartialEq, Clone)]
+pub enum BookListSort {
+    Title,
+    Author,
+    Date,
+    Genre
+}
+
+#[derive(Serialize, Deserialize, PartialEq, Clone)]
+pub enum SortDirection {
+    Up,
+    Down
+}
 
 pub_struct!(Rating {
     username: String,

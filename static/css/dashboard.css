@@ -1,3 +1,9 @@
+#options {
+    display: flex;
+    justify-content: space-around;
+    padding-top: 10px;
+}
+
 .bookListElement {
     margin-bottom: var(--inner-padding);
     padding: var(--inner-padding);
@@ -5,4 +11,25 @@
     width: 100%;
     box-sizing: border-box;
     border-radius: var(--standard-radius);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.check {
+    object-fit: fill;
+    height: 30px;
+}
+
+.thumb {
+    height: 44px;
+    border-radius: 4px;
+}
+
+.listDetails {
+    display: flex;
+    gap: 10px;
+}
+.author {
+    font-size: small;
 }

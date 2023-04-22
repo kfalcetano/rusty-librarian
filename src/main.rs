@@ -3,6 +3,7 @@ mod http_errors;
 
 use actix_files as fs;
 use actix_web::{ post, get, web::{self, Json}, App, Error, HttpResponse, Result, HttpServer, web::Data};
+use dbstructs::*;
 use openssl::ssl::{SslAcceptor, SslFiletype, SslMethod};
 use mongodb::{bson, bson::{doc, Document}, Client, Database, options::FindOptions, Collection};
 use serde_json::json;
@@ -30,14 +31,34 @@ async fn find_in_collection<T: serde::de::DeserializeOwned>(collection: Collecti
 
 #[get("/api/getUsers")]
 async fn get_users(db: Data<Database>,) ->Result<HttpResponse> {
-    let out = find_in_collection(db.collection::<dbstructs::User>("users"), None, None).await.unwrap();
+    let out = find_in_collection(db.collection::<User>("users"), None, None).await.unwrap();
     Ok(HttpResponse::Ok().append_header(("Cache-Control", "no-cache")).json(out))
 }
 
 #[get("/api/getBookList")]
-async fn get_book_list(db: Data<Database>,) ->Result<HttpResponse> {
-    let find_options = FindOptions::builder().sort(doc! {"title": 1}).build();
-    let out=find_in_collection(db.collection::<dbstructs::BookListElement>("books"), None, Some(find_options)).await.unwrap();
+async fn get_book_list(db: Data<Database>, query: web::Query<BookListQuery>) ->Result<HttpResponse> {
+    let filter: Option<bson::Document>;
+    match (query.clone().into_inner().username, query.clone().into_inner().filter) {
+        (Some(username), Some(BookListFilter::Read)) => filter = Some(doc! {"ratings": { "$elemMatch": { "username": username}}}),
+        (Some(username), Some(BookListFilter::Unread)) => filter = Some(doc! {"ratings": { "$not": {"$elemMatch": { "username": username}}}}),
+        _ => filter = None
+    }
+    let direction: i32;
+    match query.clone().into_inner().direction {
+        Some(SortDirection::Up) => direction = -1,
+        Some(SortDirection::Down) => direction = 1,
+        None => direction = 1
+    }
+    let sort: bson::Document;
+    match query.into_inner().sort {
+        Some(BookListSort::Author) => sort = doc! {"authors.0": direction},
+        Some(BookListSort::Date) => sort = doc! {"publishedDate": direction},
+        Some(BookListSort::Genre) => sort = doc! {"categories.0": direction, "title": 1},
+        Some(BookListSort::Title) => sort = doc! {"title": direction},
+        None => sort = doc! {"title": 1}
+    }
+    let find_options = FindOptions::builder().sort(sort).build();
+    let out=find_in_collection(db.collection::<BookListElement>("books"), filter, Some(find_options)).await.unwrap();
     Ok(HttpResponse::Ok().json(out))
 }
 
@@ -45,7 +66,7 @@ async fn get_book_list(db: Data<Database>,) ->Result<HttpResponse> {
 async fn book_page(db: Data<Database>, isbn: web::Path<String>) -> Result<fs::NamedFile, http_errors::DataError> {
     let id = isbn.into_inner();
     let filter = doc! { "isbn": &id };
-    let mut cursor = db.collection::<dbstructs::BookListElement>("books").find(filter, None).await.unwrap();
+    let mut cursor = db.collection::<BookListElement>("books").find(filter, None).await.unwrap();
     while cursor.advance().await.unwrap() {
         let book = cursor.deserialize_current().unwrap();
         if id == book.isbn {
@@ -59,7 +80,7 @@ async fn book_page(db: Data<Database>, isbn: web::Path<String>) -> Result<fs::Na
 async fn get_book(db: Data<Database>, isbn: web::Path<String>) -> Result<HttpResponse> {
     let id = isbn.into_inner();
     let filter = doc! { "isbn": &id };
-    let mut cursor = db.collection::<dbstructs::Book>("books").find(filter, None).await.unwrap();
+    let mut cursor = db.collection::<Book>("books").find(filter, None).await.unwrap();
     while cursor.advance().await.unwrap() {
         let book = cursor.deserialize_current().unwrap();
         if id == book.isbn {
@@ -70,76 +91,76 @@ async fn get_book(db: Data<Database>, isbn: web::Path<String>) -> Result<HttpRes
 }
 
 #[post("/api/addUser")]
-async fn add_user(db: Data<Database>, user_json: Json<dbstructs::User>) -> Result<HttpResponse, http_errors::DataError> {
+async fn add_user(db: Data<Database>, user_json: Json<User>) -> Result<HttpResponse, http_errors::DataError> {
     let user = user_json.into_inner();
-    let mut cursor = db.collection::<dbstructs::User>("users").find(None, None).await.unwrap();
+    let mut cursor = db.collection::<User>("users").find(None, None).await.unwrap();
     while cursor.advance().await.unwrap() {
         if user.name == cursor.deserialize_current().unwrap().name {
             return Err(http_errors::DataError::DuplicateUser)
         }
     }
-    db.collection::<dbstructs::User>("users").insert_one(user.clone(), None).await.unwrap();
+    db.collection::<User>("users").insert_one(user.clone(), None).await.unwrap();
     Ok(HttpResponse::Ok().append_header(("Cache-Control", "no-cache")).json(user))
 }
 
 #[post("/api/fetchBook")]
-async fn fetch_book(db: Data<Database>, obj: Json<dbstructs::BookId>) -> Result<HttpResponse, Box<dyn std::error::Error>> {
+async fn fetch_book(db: Data<Database>, obj: Json<BookId>) -> Result<HttpResponse, Box<dyn std::error::Error>> {
     let filter = doc! { "isbn": obj.isbn.clone() };
-    let mut cursor = db.collection::<dbstructs::Book>("books").find(filter, None).await?;
+    let mut cursor = db.collection::<Book>("books").find(filter, None).await?;
     while cursor.advance().await? {
         let book = cursor.deserialize_current()?;
         if obj.isbn == book.isbn {
             return Ok(HttpResponse::Found().append_header(("Cache-Control", "no-cache")).json(book))
         }
     }
-    let book_find: dbstructs::Volumes = reqwest::get(format!("{}{}&maxResults=1", GOOG_BOOK_ROUTE, &obj.isbn)).await?.json().await?;
+    let book_find: Volumes = reqwest::get(format!("{}{}&maxResults=1", GOOG_BOOK_ROUTE, &obj.isbn)).await?.json().await?;
     println!("{}", book_find.items[0].volumeInfo.title);
     Ok(HttpResponse::Ok().append_header(("Cache-Control", "no-cache")).json(&book_find.items[0].volumeInfo.into_book(obj.isbn.clone())))
 }
 
 #[post("/api/addBook")]
-async fn add_book(db: Data<Database>, book_json: Json<dbstructs::Book>) -> Result<HttpResponse, http_errors::DataError> {
+async fn add_book(db: Data<Database>, book_json: Json<Book>) -> Result<HttpResponse, http_errors::DataError> {
     let book = book_json.into_inner();
     let filter = doc! { "isbn": book.isbn.clone() };
-    let mut cursor = db.collection::<dbstructs::Book>("books").find(filter, None).await.unwrap();
+    let mut cursor = db.collection::<Book>("books").find(filter, None).await.unwrap();
     while cursor.advance().await.unwrap() {
         if book.isbn == cursor.deserialize_current().unwrap().isbn {
             println!("{} already added", book.title);
             return Err(http_errors::DataError::DuplicateBook)
         }
     }
-    db.collection::<dbstructs::Book>("books").insert_one(book.clone(), None).await.unwrap();
+    db.collection::<Book>("books").insert_one(book.clone(), None).await.unwrap();
     Ok(HttpResponse::Ok().append_header(("Cache-Control", "no-cache")).json(book))
 }
 
 #[post("/api/deleteBook")]
-async fn delete_book(db: Data<Database>, obj: Json<dbstructs::BookId>) -> Result<HttpResponse, Error> {
-    let dr = db.collection::<dbstructs::Book>("books").delete_one(doc!{"isbn": obj.isbn.clone()}, None).await.unwrap();
+async fn delete_book(db: Data<Database>, obj: Json<BookId>) -> Result<HttpResponse, Error> {
+    let dr = db.collection::<Book>("books").delete_one(doc!{"isbn": obj.isbn.clone()}, None).await.unwrap();
     Ok(HttpResponse::Ok().append_header(("Cache-Control", "no-cache")).json(json!({"num_deleted": dr.deleted_count})))
 }
 
 #[post("/api/deleteUser")]
-async fn delete_user(db: Data<Database>, obj: Json<dbstructs::User>) -> Result<HttpResponse, Error> {
-    let dr = db.collection::<dbstructs::Book>("users").delete_one(doc!{"name": obj.name.clone()}, None).await.unwrap();
+async fn delete_user(db: Data<Database>, obj: Json<User>) -> Result<HttpResponse, Error> {
+    let dr = db.collection::<Book>("users").delete_one(doc!{"name": obj.name.clone()}, None).await.unwrap();
     Ok(HttpResponse::Ok().append_header(("Cache-Control", "no-cache")).json(json!({"num_deleted": dr.deleted_count})))
 }
 
 #[post("/api/addComment/{isbn}")]
-async fn add_comment(db: Data<Database>, isbn: web::Path<String>, comment: Json<dbstructs::Comment>) -> Result<HttpResponse, Error> {
+async fn add_comment(db: Data<Database>, isbn: web::Path<String>, comment: Json<Comment>) -> Result<HttpResponse, Error> {
     let filter = doc!{"isbn": isbn.into_inner()};
     let update = doc!{"$push": {"comments": bson::to_bson(&comment.into_inner()).unwrap()}};
-    db.collection::<dbstructs::Book>("books").update_one(filter, update, None).await.unwrap();
+    db.collection::<Book>("books").update_one(filter, update, None).await.unwrap();
     Ok(HttpResponse::Ok().append_header(("Cache-Control", "no-cache")).json(json!({"message": "added comment"})))
 }
 
 #[post("/api/rateBook/{isbn}")]
-async fn rate_book(db: Data<Database>, isbn: web::Path<String>, rating: Json<dbstructs::Rating>) -> Result<HttpResponse, Box<dyn std::error::Error>> {
-    let coll = db.collection::<dbstructs::Book>("books");
+async fn rate_book(db: Data<Database>, isbn: web::Path<String>, rating: Json<Rating>) -> Result<HttpResponse, Box<dyn std::error::Error>> {
+    let coll = db.collection::<Book>("books");
     let book = coll.find_one(doc!{"isbn": isbn.clone()}, None).await?;
     if book.is_none() {
         return Err(Box::new(http_errors::DataError::BookNotFound))
     }
-    if db.collection::<dbstructs::User>("users").find_one(doc!{"name": rating.username.clone()}, None).await?.is_none() {
+    if db.collection::<User>("users").find_one(doc!{"name": rating.username.clone()}, None).await?.is_none() {
         return Err(Box::new(http_errors::DataError::UserNotFound))
     }
     match book.unwrap().ratings.iter().find(|x| x.username == rating.username) {

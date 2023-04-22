@@ -87,6 +87,7 @@ h2 {
     align-items: center;
     justify-content: space-between;
     padding: var(--outer-padding);
+    padding-bottom: var(--inner-padding);
     gap: 1rem;
     background-color: var(--bg-pane);
 }
@@ -135,4 +136,13 @@ input {
     background-color: var(--bg-secondary);
     padding: var(--inner-padding);
     border-radius: 99em;
+}
+
+select {
+    color: #d3d3d3;
+    border: none;
+    background-color: #252525;
+    border-radius: 5px;
+    padding: 5px 10px 5px 10px;
+    font-size: unset;
 }

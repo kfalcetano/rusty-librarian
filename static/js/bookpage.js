@@ -1,4 +1,7 @@
 async function deleteBook() {
+    if (!window.confirm("Are you sure you want to delete this book?\n(cannot be undone)")) {
+        return
+    }
     isbn = window.location.toString().split('/').pop()
     fetch("/api/deleteBook", {
         method: 'POST',
@@ -7,7 +10,6 @@ async function deleteBook() {
         },
         body: JSON.stringify({isbn: String(isbn)})
     }).then(() => window.location.href = "/")
-    
 }
 
 async function rate(stars) {
@@ -62,6 +64,7 @@ async function updateAvgStars() {
 }
 
 async function main() {
+    setupUserData()
     updateStars()
     isbn = window.location.toString().split('/').pop()
     const response = await fetch(`/api/book/${isbn}`)

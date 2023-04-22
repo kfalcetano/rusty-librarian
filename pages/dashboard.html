@@ -16,7 +16,25 @@
       <img id="logo" src="../static/images/homelibrarian.svg">
       <h2>Home Librarian</h2>
     </div>
-    <button id="userSection" onclick="selectNewUser()"></div>
+    <button id="userSection" onclick="selectNewUser()"></button>
+  </div>
+
+  <div id="options">
+    <select name="Filter" id="filter" onchange="queryChanged()">
+      <option value="Both">Both</option>
+      <option value="Read">Read</option>
+      <option value="Unread">Unread</option>
+    </select>
+    <select name="Sort" id="sort" onchange="queryChanged()">
+      <option value="Title">Title</option>
+      <option value="Author">Author</option>
+      <option value="Date">Date</option>
+      <option value="Genre">Genre</option>
+    </select>
+    <select name="Direction" id="direction" onchange="queryChanged()">
+      <option value="Down">Down</option>
+      <option value="Up">Up</option>
+    </select>
   </div>
 
   <div id="contentContainer">
