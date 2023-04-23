@@ -1,2 +1,4 @@
 /target
 *.pem
+*.tar
+*.gz

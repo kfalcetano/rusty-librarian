@@ -19,6 +19,9 @@ async fn scanner() -> Result<fs::NamedFile> {
 async fn dashboard() -> Result<fs::NamedFile> {
     Ok(fs::NamedFile::open("pages/dashboard.html")?)
 }
+async fn search() -> Result<fs::NamedFile> {
+    Ok(fs::NamedFile::open("pages/search.html")?)
+}
 
 async fn find_in_collection<T: serde::de::DeserializeOwned>(collection: Collection<T>, filter: Option<Document>, options: Option<FindOptions>) -> Result<Vec<T>, mongodb::error::Error> {
     let mut cursor= collection.find(filter, options).await?;
@@ -183,15 +186,15 @@ async fn main() -> std::io::Result<()> {
 
     // load TLS keys
     // to create a self-signed temporary cert for testing:
-    // openssl req -x509 -newkey rsa:4096 -nodes -keyout key.pem -out cert.pem -days 365 -subj '/C=US/ST=Washington'
+    // mkdir -p certs && openssl req -x509 -newkey rsa:4096 -nodes -keyout certs/key.pem -out certs/cert.pem -days 365 -subj '/C=US/ST=Washington'
     let mut builder = SslAcceptor::mozilla_intermediate(SslMethod::tls()).unwrap();
-    builder.set_private_key_file("key.pem", SslFiletype::PEM).unwrap();
-    builder.set_certificate_chain_file("cert.pem").unwrap();
+    builder.set_private_key_file("certs/key.pem", SslFiletype::PEM).unwrap();
+    builder.set_certificate_chain_file("certs/cert.pem").unwrap();
 
     // wsl2 fuckery:
     // netsh interface portproxy add v4tov4 listenport=8100 listenaddress=0.0.0.0 connectport=8100 connectaddress=<wsl_ip>
 
-    let client = Client::with_uri_str("mongodb://root:rootpassword@localhost:27017").await.unwrap();
+    let client = Client::with_uri_str("mongodb://datastore:27017").await.unwrap();
 
     let db_data = Data::new(client.database("testdb"));
 
@@ -201,6 +204,7 @@ async fn main() -> std::io::Result<()> {
                         .route("/", web::get().to(index))
                         .route("/scanner", web::get().to(scanner))
                         .route("/dashboard", web::get().to(dashboard))
+                        .route("/search", web::get().to(search))
                         .service(get_users)
                         .service(fetch_book)
                         .service(add_book)

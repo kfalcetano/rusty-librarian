@@ -1,0 +1,21 @@
+version: '3.7'
+services:
+  datastore:
+    image: mongo:latest
+    ports:
+      - 27017:27017
+    restart: always
+    volumes:
+      - mongodb_data_container:/data/db
+  librarian:
+    image: librarian:1.0
+    ports:
+      - 8100:8100
+    restart: always
+    volumes:
+      - ./static/:/app/static/
+      - ./pages/:/app/pages/
+      - ./certs/:/app/certs/
+
+volumes:
+  mongodb_data_container:
