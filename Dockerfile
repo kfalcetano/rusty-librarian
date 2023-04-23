@@ -1,6 +1,6 @@
 FROM ubuntu:latest
+RUN apt-get update
+RUN apt-get install ca-certificates -y
 WORKDIR /app
 COPY target/release/librarian .
-COPY cert.pem .
-COPY key.pem .
 ENTRYPOINT ["/app/librarian"]
