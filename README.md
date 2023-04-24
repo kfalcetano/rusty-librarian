@@ -5,7 +5,7 @@ Ever wanted a home catalogue of your physical books? I did, so I made this.
 
 It uses the Google Books API as a data source, an Actix Web server connected to MongoDB, and a vanilla JS front end.
 
-This server runs on port 8100 by default and requires SSL (required for camera scanning use).
+This server runs on port 8100 by default and requires SSL (required for camera scanning use). The barcode scanning defaults to the built-in browser API feature (Android only for the foreseeable future), with a polyfill that should work for iOS, Desktop, Zune, Samsung Smart Fridge, or whatever.
 
 | Browse Your Catalogue       | Add Users                     |
 | :-------------------------- | :---------------------------- |
@@ -24,6 +24,7 @@ The TODOs:
 - [ ] Search feature
 - [ ] Personal notes feature
 - [ ] User DB cleanup
+- [ ] Better desktop browser UI
 - [ ] In-app field editing to override the Google data
 - [ ] Fallback searching to fix mismatched ISBNs
 
