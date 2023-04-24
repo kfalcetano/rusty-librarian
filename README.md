@@ -7,10 +7,13 @@ It uses the Google Books API as a data source, an Actix Web server connected to 
 
 This server runs on port 8100 by default and requires SSL (required for camera scanning use).
 
-| Browse Your Catalogue       | Add Users                     | Scan Books                | Rate (Marks as Read)        |
-| :-------------------------- | :---------------------------- | :------------------------ | :-------------------------- |
-| ![](./images/dashboard.png) | ![](./images/user_select.png) | ![](./images/scanner.png) | ![](./images/book_page.png) |
+| Browse Your Catalogue       | Add Users                     |
+| :-------------------------- | :---------------------------- |
+| ![](./images/dashboard.png) | ![](./images/user_select.png) |
 
+| Scan Books                  | Rate (Marks as Read)          |
+| :------------------------   | :--------------------------   |
+| ![](./images/scanner.png)   | ![](./images/book_page.png)   |
 
 ## Current Work
 There is a path to "feature complete", and I definitely have not reached the end of it.
